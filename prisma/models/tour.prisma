@@ -1,0 +1,10 @@
+model Tour {
+    id             Int       @id @default(autoincrement())
+    title          String
+    destination    String
+    date           DateTime
+    priceIQD       Int
+    maxSeats       Int       @default(30)
+    availableSeats Int       @default(30)
+    bookings       Booking[]
+}
