@@ -8,4 +8,7 @@ model Booking {
     phoneNumber   String
     seatsBooked   Int
     createdAt     DateTime @default(now())
+
+    @@index([tourId])
+    @@index([userId])
 }

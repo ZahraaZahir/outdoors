@@ -7,4 +7,7 @@ model Tour {
     maxSeats       Int       @default(30)
     availableSeats Int       @default(30)
     bookings       Booking[]
+
+    @@index([date])
+    @@index([destination])
 }
