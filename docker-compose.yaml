@@ -1,13 +1,14 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: always
     container_name: outdoors_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root_password
       POSTGRES_DB: outdoor_db
     ports:
-      - "5434:5432"
+      - '5434:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -15,14 +16,7 @@ services:
     image: redis:7-alpine
     container_name: outdoors_redis
     ports:
-      - "6379:6379"
-
-  rabbitmq:
-    image: rabbitmq:3.12-management-alpine
-    container_name: outdoors_rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+      - '6379:6379'
 
 volumes:
   pgdata:
