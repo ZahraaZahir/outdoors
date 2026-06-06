@@ -1,6 +1,6 @@
 # Outdoors
 
-Hi! Outdoors is a high-concurrency reservation engine for local adventure and guided tours. The backend is currently built with a NestJS architecture featuring
+Hi! Outdoors is a high-concurrency reservation engine for local adventure and guided tours. The backend is currently built with a NestJS architecture featuring:
 
 1. Stateless JWT authentication.
 2. Role-based access control.
