@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { PrismaModule } from './prisma/prisma.module.js';
 import config from './config/config.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import config from './config/config.js';
     AuthModule,
     ToursModule,
     BookingsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

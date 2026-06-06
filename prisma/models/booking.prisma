@@ -1,3 +1,9 @@
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    FAILED
+}
+
 model Booking {
     id            Int      @id @default(autoincrement())
     tourId        Int
@@ -7,6 +13,7 @@ model Booking {
     passengerName String
     phoneNumber   String
     seatsBooked   Int
+    status BookingStatus @default(PENDING)
     createdAt     DateTime @default(now())
 
     @@index([tourId])
