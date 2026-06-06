@@ -1,5 +1,7 @@
 # Outdoors
 
+<img src="./assets/image.png" width="600" alt="outdoors" />
+
 Hi! Outdoors is a high-concurrency reservation engine for local adventure and guided tours. The backend is currently built with a NestJS architecture featuring:
 
 1. Stateless JWT authentication.
