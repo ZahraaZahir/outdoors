@@ -1,16 +1,20 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { BookingStatus } from '../generated/prisma/client.js';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { MAX_SEATS_PER_USER_PER_TOUR } from './bookings.constants.js';
+import { TOURS_CACHE_KEY } from '../tours/tours.constants.js';
 
 @Injectable()
 export class BookingsService {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue('sms_queue') private readonly smsQueue: Queue,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async create(dto: CreateBookingDto, userId: number) {
@@ -31,8 +35,8 @@ export class BookingsService {
 
     if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_PER_TOUR) {
       throw new BadRequestException(
-        `Booking rejected. Seat limit per user/phone on this tour is ${MAX_SEATS_PER_USER_PER_TOUR}.
-         You currently have ${currentlyBooked} seats booked.`,
+        `Booking rejected. Seat limit per user/phone on this tour is ${MAX_SEATS_PER_USER_PER_TOUR}. 
+        You currently have ${currentlyBooked} seats booked.`,
       );
     }
 
@@ -63,6 +67,8 @@ export class BookingsService {
         },
       });
     });
+
+    await this.cacheManager.del(TOURS_CACHE_KEY);
 
     await this.smsQueue.add(
       'send-confirmation',

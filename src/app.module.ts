@@ -33,7 +33,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
           url: redisUrl,
         });
         return {
-          store: () => store,
+          store: store,
         };
       },
     }),
