@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsInt, IsString, Min, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsInt,
+  IsString,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator';
 import { MAX_SEATS_PER_USER_PER_TOUR } from '../bookings.constants.js';
 
 export class CreateBookingDto {
@@ -12,6 +19,10 @@ export class CreateBookingDto {
 
   @IsNotEmpty()
   @IsString()
+  @Matches(/^(?:\+964|0)?7[5789]\d{8}$/, {
+    message:
+      'Phone number must be a valid Iraqi mobile format (Zain, Asiacell, or Korek)',
+  })
   phoneNumber!: string;
 
   @IsNotEmpty()
