@@ -43,9 +43,10 @@ export class SmsProcessor extends WorkerHost {
       return;
     }
 
-    const payload = new SmsPayload();
-    payload.phoneNumber = phoneNumber;
-    payload.message = `Hi ${passengerName}, your booking (ID: ${bookingId}) has been confirmed!`;
+    const payload: SmsPayload = {
+      phoneNumber,
+      message: `Hi ${passengerName}, your booking (ID: ${bookingId}) has been confirmed!`,
+    };
 
     try {
       await this.smsProvider.send(payload);

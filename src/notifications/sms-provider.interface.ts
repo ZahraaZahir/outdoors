@@ -1,6 +1,6 @@
-export class SmsPayload {
-  phoneNumber!: string;
-  message!: string;
+export interface SmsPayload {
+  phoneNumber: string;
+  message: string;
 }
 
 export abstract class SmsProvider {
