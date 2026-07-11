@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -7,6 +7,8 @@ import { TOURS_CACHE_KEY, TOURS_TTL } from './tours.constants.js';
 
 @Injectable()
 export class ToursService {
+  private readonly logger = new Logger(ToursService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -32,11 +34,11 @@ export class ToursService {
   async findAll() {
     const cached = await this.cacheManager.get(TOURS_CACHE_KEY);
     if (cached) {
-      console.log('[CACHE HIT] Serving upcoming tours from Redis.');
+      this.logger.log('Serving upcoming tours from Redis cache.');
       return cached;
     }
 
-    console.log('[CACHE MISS] Fetching upcoming tours from PostgreSQL.');
+    this.logger.log('Fetching upcoming tours from PostgreSQL.');
 
     const tours = await this.prisma.tour.findMany({
       where: { date: { gte: new Date() } },
