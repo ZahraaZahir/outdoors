@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -11,6 +11,8 @@ import { TOURS_CACHE_KEY } from '../tours/tours.constants.js';
 
 @Injectable()
 export class BookingsService {
+  private readonly logger = new Logger(BookingsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue('sms_queue') private readonly smsQueue: Queue,
@@ -40,33 +42,42 @@ export class BookingsService {
       );
     }
 
-    const booking = await this.prisma.$transaction(async (tx) => {
-      const updateResult = await tx.tour.updateMany({
-        where: {
-          id: tourId,
-          availableSeats: { gte: seatsBooked },
-        },
-        data: {
-          availableSeats: { decrement: seatsBooked },
-        },
-      });
+    let booking;
+    try {
+      booking = await this.prisma.$transaction(async (tx) => {
+        const updateResult = await tx.tour.updateMany({
+          where: {
+            id: tourId,
+            availableSeats: { gte: seatsBooked },
+          },
+          data: {
+            availableSeats: { decrement: seatsBooked },
+          },
+        });
 
-      if (updateResult.count === 0) {
-        throw new BadRequestException(
-          'Not enough available seats on this tour.',
-        );
+        if (updateResult.count === 0) {
+          throw new BadRequestException(
+            'Not enough available seats on this tour.',
+          );
+        }
+
+        return tx.booking.create({
+          data: {
+            tourId,
+            userId,
+            passengerName,
+            phoneNumber,
+            seatsBooked,
+          },
+        });
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
       }
-
-      return tx.booking.create({
-        data: {
-          tourId,
-          userId,
-          passengerName,
-          phoneNumber,
-          seatsBooked,
-        },
-      });
-    });
+      this.logger.error(`Booking transaction failed: ${error.message}`);
+      throw new BadRequestException('Failed to create booking. Please try again.');
+    }
 
     await this.cacheManager.del(TOURS_CACHE_KEY);
 

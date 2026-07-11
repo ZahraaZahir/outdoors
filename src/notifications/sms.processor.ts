@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
+import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BookingStatus } from '../generated/prisma/client.js';
 import { SmsPayload, SmsProvider } from './sms-provider.interface.js';
@@ -12,6 +13,8 @@ interface SmsJobData {
 
 @Processor('sms_queue')
 export class SmsProcessor extends WorkerHost {
+  private readonly logger = new Logger(SmsProcessor.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly smsProvider: SmsProvider,
@@ -34,8 +37,8 @@ export class SmsProcessor extends WorkerHost {
     }
 
     if (booking.status === BookingStatus.CONFIRMED) {
-      console.log(
-        `Execution bypassed: Booking ID ${bookingId} is already CONFIRMED.`,
+      this.logger.warn(
+        `Booking ID ${bookingId} is already CONFIRMED, skipping.`,
       );
       return;
     }
@@ -44,15 +47,27 @@ export class SmsProcessor extends WorkerHost {
     payload.phoneNumber = phoneNumber;
     payload.message = `Hi ${passengerName}, your booking (ID: ${bookingId}) has been confirmed!`;
 
-    await this.smsProvider.send(payload);
+    try {
+      await this.smsProvider.send(payload);
+    } catch (error) {
+      this.logger.error(`SMS send failed for booking ${bookingId}: ${error.message}`);
+      throw error;
+    }
 
-    await this.prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: BookingStatus.CONFIRMED },
-    });
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.booking.update({
+          where: { id: bookingId },
+          data: { status: BookingStatus.CONFIRMED },
+        });
+      });
+    } catch (error) {
+      this.logger.error(`Failed to update booking ${bookingId} status: ${error.message}`);
+      throw error;
+    }
 
-    console.log(
-      `State Transition Complete: Booking ID ${bookingId} set to CONFIRMED.`,
+    this.logger.log(
+      `Booking ID ${bookingId} set to CONFIRMED.`,
     );
   }
 }

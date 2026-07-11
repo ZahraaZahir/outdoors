@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +12,8 @@ import { LoginDto } from './dtos/login.dto.js';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -19,36 +22,39 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { name, email, password, phoneNumber } = registerDto;
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('Email is already in use');
-    }
-
     const salt = await genSalt(10);
     const hashedPassword = await hash(password, salt);
 
-    const user = await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        phoneNumber,
-        role: 'TRAVELER',
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phoneNumber: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          phoneNumber,
+          role: 'TRAVELER',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phoneNumber: true,
+          role: true,
+          createdAt: true,
+        },
+      });
 
-    return user;
+      return user;
+    } catch (error) {
+      if (
+        error.code === 'P2002' &&
+        error.meta?.target?.includes('email')
+      ) {
+        throw new ConflictException('Email is already in use');
+      }
+      this.logger.error(`Registration failed: ${error.message}`);
+      throw error;
+    }
   }
 
   async login(credentials: LoginDto) {
