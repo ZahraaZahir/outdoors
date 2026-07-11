@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { BookingStatus } from '../generated/prisma/client.js';
+import { BookingStatus } from '../generated/prisma/enums.js';
 import { SmsPayload, SmsProvider } from './sms-provider.interface.js';
 
 interface SmsJobData {

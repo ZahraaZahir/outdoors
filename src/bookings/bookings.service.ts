@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { BookingStatus } from '../generated/prisma/client.js';
+import { BookingStatus } from '../generated/prisma/enums.js';
 import type { Booking } from '../generated/prisma/client.js';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
