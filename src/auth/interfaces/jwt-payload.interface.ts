@@ -1,5 +1,7 @@
+import { Role } from '../../generated/prisma/enums.js';
+
 export interface JwtPayload {
   sub: number;
   email: string;
-  role: string;
+  role: Role;
 }
