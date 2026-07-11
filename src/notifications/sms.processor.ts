@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BookingStatus } from '../generated/prisma/client.js';
+import { SmsPayload, SmsProvider } from './sms-provider.interface.js';
 
 interface SmsJobData {
   bookingId: number;
@@ -11,7 +12,10 @@ interface SmsJobData {
 
 @Processor('sms_queue')
 export class SmsProcessor extends WorkerHost {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly smsProvider: SmsProvider,
+  ) {
     super();
   }
 
@@ -36,10 +40,11 @@ export class SmsProcessor extends WorkerHost {
       return;
     }
 
-    console.log(
-      `[EXTERNAL API CALL] Sending SMS to ${passengerName} at ${phoneNumber}...`,
-    );
-    await this.simulateExternalSmsGateway();
+    const payload = new SmsPayload();
+    payload.phoneNumber = phoneNumber;
+    payload.message = `Hi ${passengerName}, your booking (ID: ${bookingId}) has been confirmed!`;
+
+    await this.smsProvider.send(payload);
 
     await this.prisma.booking.update({
       where: { id: bookingId },
@@ -49,9 +54,5 @@ export class SmsProcessor extends WorkerHost {
     console.log(
       `State Transition Complete: Booking ID ${bookingId} set to CONFIRMED.`,
     );
-  }
-
-  private simulateExternalSmsGateway(): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, 500));
   }
 }
