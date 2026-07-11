@@ -1,0 +1,65 @@
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { api } from "../lib/api";
+import type { User } from "../lib/types";
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: { name: string; email: string; password: string; phoneNumber: string }) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+}
+
+const AuthContext = createContext<AuthState | null>(null);
+
+function parseJwt(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return { id: payload.sub, email: payload.email, role: payload.role, name: "", phoneNumber: "", createdAt: "" };
+  } catch {
+    return null;
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (token) {
+      setUser(parseJwt(token));
+    }
+    setLoading(false);
+  }, [token]);
+
+  const login = async (email: string, password: string) => {
+    const res = await api.login({ email, password });
+    localStorage.setItem("token", res.accessToken);
+    setToken(res.accessToken);
+    setUser(parseJwt(res.accessToken));
+  };
+
+  const register = async (data: { name: string; email: string; password: string; phoneNumber: string }) => {
+    await api.register(data);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+}
