@@ -28,29 +28,28 @@ export class BookingsService {
   async create(dto: CreateBookingDto, userId: number) {
     const { tourId, passengerName, phoneNumber, seatsBooked } = dto;
 
-    const existingBookings = await this.prisma.booking.aggregate({
-      where: {
-        tourId,
-        OR: [{ userId }, { phoneNumber }],
-        status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-      },
-      _sum: {
-        seatsBooked: true,
-      },
-    });
-
-    const currentlyBooked = existingBookings._sum.seatsBooked || 0;
-
-    if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_PER_TOUR) {
-      throw new BadRequestException(
-        `Booking rejected. Seat limit per user/phone on this tour is ${MAX_SEATS_PER_USER_PER_TOUR}. 
-        You currently have ${currentlyBooked} seats booked.`,
-      );
-    }
-
     let booking: Booking;
     try {
       booking = await this.prisma.$transaction(async (tx) => {
+        const existingBookings = await tx.booking.aggregate({
+          where: {
+            tourId,
+            OR: [{ userId }, { phoneNumber }],
+            status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+          },
+          _sum: {
+            seatsBooked: true,
+          },
+        });
+
+        const currentlyBooked = existingBookings._sum.seatsBooked || 0;
+
+        if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_PER_TOUR) {
+          throw new BadRequestException(
+            `Booking rejected. Seat limit per user/phone on this tour is ${MAX_SEATS_PER_USER_PER_TOUR}. You currently have ${currentlyBooked} seats booked.`,
+          );
+        }
+
         const updateResult = await tx.tour.updateMany({
           where: {
             id: tourId,
