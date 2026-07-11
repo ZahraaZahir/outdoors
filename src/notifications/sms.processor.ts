@@ -49,8 +49,9 @@ export class SmsProcessor extends WorkerHost {
 
     try {
       await this.smsProvider.send(payload);
-    } catch (error) {
-      this.logger.error(`SMS send failed for booking ${bookingId}: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`SMS send failed for booking ${bookingId}: ${message}`);
       throw error;
     }
 
@@ -61,13 +62,14 @@ export class SmsProcessor extends WorkerHost {
           data: { status: BookingStatus.CONFIRMED },
         });
       });
-    } catch (error) {
-      this.logger.error(`Failed to update booking ${bookingId} status: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to update booking ${bookingId} status: ${message}`,
+      );
       throw error;
     }
 
-    this.logger.log(
-      `Booking ID ${bookingId} set to CONFIRMED.`,
-    );
+    this.logger.log(`Booking ID ${bookingId} set to CONFIRMED.`);
   }
 }

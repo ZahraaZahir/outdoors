@@ -45,14 +45,16 @@ export class AuthService {
       });
 
       return user;
-    } catch (error) {
-      if (
-        error.code === 'P2002' &&
-        error.meta?.target?.includes('email')
-      ) {
+    } catch (error: unknown) {
+      const err = error as {
+        code?: string;
+        meta?: { target?: string[] };
+        message?: string;
+      };
+      if (err.code === 'P2002' && err.meta?.target?.includes('email')) {
         throw new ConflictException('Email is already in use');
       }
-      this.logger.error(`Registration failed: ${error.message}`);
+      this.logger.error(`Registration failed: ${err.message}`);
       throw error;
     }
   }

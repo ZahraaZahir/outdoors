@@ -1,9 +1,15 @@
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { BookingStatus } from '../generated/prisma/client.js';
+import type { Booking } from '../generated/prisma/client.js';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { MAX_SEATS_PER_USER_PER_TOUR } from './bookings.constants.js';
@@ -42,7 +48,7 @@ export class BookingsService {
       );
     }
 
-    let booking;
+    let booking: Booking;
     try {
       booking = await this.prisma.$transaction(async (tx) => {
         const updateResult = await tx.tour.updateMany({
@@ -71,12 +77,15 @@ export class BookingsService {
           },
         });
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(`Booking transaction failed: ${error.message}`);
-      throw new BadRequestException('Failed to create booking. Please try again.');
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Booking transaction failed: ${message}`);
+      throw new BadRequestException(
+        'Failed to create booking. Please try again.',
+      );
     }
 
     await this.cacheManager.del(TOURS_CACHE_KEY);
