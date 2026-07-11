@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { ToursService } from './tours.service.js';
 import { CreateTourDto } from './dtos/create-tour.dto.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -20,5 +20,10 @@ export class ToursController {
   @Get()
   async findAll() {
     return this.toursService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.toursService.findOne(id);
   }
 }

@@ -104,4 +104,12 @@ export class BookingsService {
 
     return booking;
   }
+
+  async findMine(userId: number) {
+    return this.prisma.booking.findMany({
+      where: { userId },
+      include: { tour: { select: { id: true, title: true, destination: true, date: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

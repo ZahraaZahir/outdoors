@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
 import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
@@ -16,5 +16,10 @@ export class BookingsController {
     @CurrentUser() user: AuthenticatedRequest['user'],
   ) {
     return this.bookingsService.create(dto, user!.id);
+  }
+
+  @Get()
+  async findMine(@CurrentUser() user: AuthenticatedRequest['user']) {
+    return this.bookingsService.findMine(user!.id);
   }
 }

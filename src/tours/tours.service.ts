@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -47,5 +47,13 @@ export class ToursService {
 
     await this.cacheManager.set(TOURS_CACHE_KEY, tours, TOURS_TTL);
     return tours;
+  }
+
+  async findOne(id: number) {
+    const tour = await this.prisma.tour.findUnique({ where: { id } });
+    if (!tour) {
+      throw new NotFoundException(`Tour with ID ${id} not found`);
+    }
+    return tour;
   }
 }
