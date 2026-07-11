@@ -4,7 +4,7 @@ import { AppService } from './app.service.js';
 
 import { CacheModule } from '@nestjs/cache-manager';
 import { BullModule } from '@nestjs/bullmq';
-import { redisStore } from 'cache-manager-redis-yet';
+import KeyvRedis from '@keyv/redis';
 
 import { AuthModule } from './auth/auth.module.js';
 import { ToursModule } from './tours/tours.module.js';
@@ -27,13 +27,10 @@ import { NotificationsModule } from './notifications/notifications.module.js';
       isGlobal: true,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
+      useFactory: (configService: ConfigService) => {
         const redisUrl = configService.get<string>('redis.url');
-        const store = await redisStore({
-          url: redisUrl,
-        });
         return {
-          store: store,
+          stores: [new KeyvRedis(redisUrl)],
         };
       },
     }),
