@@ -8,6 +8,22 @@ const STATUS_COLORS: Record<string, string> = {
   FAILED: "bg-red-100 text-red-800",
 };
 
+function BookingSkeleton() {
+  return (
+    <div className="flex items-center justify-between rounded border border-gray-200 p-4 animate-pulse">
+      <div>
+        <div className="mb-2 h-5 w-40 rounded bg-gray-200" />
+        <div className="mb-1 h-4 w-28 rounded bg-gray-200" />
+        <div className="h-4 w-36 rounded bg-gray-200" />
+      </div>
+      <div className="text-right">
+        <div className="mb-1 ml-auto h-6 w-20 rounded-full bg-gray-200" />
+        <div className="ml-auto h-3 w-16 rounded bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
 export default function MyBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +32,18 @@ export default function MyBookings() {
     api.getBookings().then(setBookings).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-center">Loading bookings...</div>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-4xl p-8">
+        <div className="mb-6 h-8 w-40 rounded bg-gray-200 animate-pulse" />
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <BookingSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl p-8">

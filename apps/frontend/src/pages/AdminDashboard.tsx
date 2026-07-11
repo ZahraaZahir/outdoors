@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { Tour, Booking } from "../lib/types";
 
+function StatSkeleton() {
+  return (
+    <div className="rounded border border-gray-200 p-4 animate-pulse">
+      <div className="mb-2 h-4 w-24 rounded bg-gray-200" />
+      <div className="h-8 w-16 rounded bg-gray-200" />
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -13,7 +22,18 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl p-8">
+        <div className="mb-6 h-8 w-48 rounded bg-gray-200 animate-pulse" />
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <StatSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const totalRevenue = bookings.reduce((sum, b) => {
     const tour = tours.find((t) => t.id === b.tourId);

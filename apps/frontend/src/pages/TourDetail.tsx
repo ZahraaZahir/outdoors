@@ -4,6 +4,25 @@ import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { Tour } from "../lib/types";
 
+function TourDetailSkeleton() {
+  return (
+    <div className="mx-auto max-w-2xl p-8 animate-pulse">
+      <div className="mb-2 h-8 w-64 rounded bg-gray-200" />
+      <div className="mb-1 h-5 w-40 rounded bg-gray-200" />
+      <div className="mb-1 h-5 w-32 rounded bg-gray-200" />
+      <div className="mb-2 mt-4 h-7 w-36 rounded bg-gray-200" />
+      <div className="mb-6 h-4 w-44 rounded bg-gray-200" />
+      <div className="rounded border border-gray-200 p-4">
+        <div className="mb-4 h-5 w-32 rounded bg-gray-200" />
+        <div className="mb-3 h-10 w-full rounded bg-gray-200" />
+        <div className="mb-3 h-10 w-full rounded bg-gray-200" />
+        <div className="mb-4 h-10 w-24 rounded bg-gray-200" />
+        <div className="h-10 w-full rounded bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
 export default function TourDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -31,7 +50,7 @@ export default function TourDetail() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <TourDetailSkeleton />;
   if (!tour) return <div className="p-8 text-center">Tour not found.</div>;
 
   return (
