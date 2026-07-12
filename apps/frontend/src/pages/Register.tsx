@@ -23,19 +23,72 @@ export default function Register() {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   return (
-    <div className="mx-auto max-w-md p-8">
-      <h1 className="mb-6 text-2xl font-bold">Register</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {error && <div className="rounded bg-red-50 p-2 text-sm text-red-600">{error}</div>}
-        <input placeholder="Name" required value={form.name} onChange={update("name")} className="rounded border p-2" />
-        <input type="email" placeholder="Email" required value={form.email} onChange={update("email")} className="rounded border p-2" />
-        <input type="password" placeholder="Password (min 6 chars)" required minLength={6} value={form.password} onChange={update("password")} className="rounded border p-2" />
-        <input placeholder="Phone (e.g. 07701234567)" required value={form.phoneNumber} onChange={update("phoneNumber")} className="rounded border p-2" />
-        <button type="submit" className="rounded bg-black p-2 text-white hover:bg-gray-800">Register</button>
-      </form>
-      <p className="mt-4 text-sm text-gray-500">
-        Already have an account? <Link to="/login" className="underline">Login</Link>
-      </p>
+    <div className="flex min-h-screen items-center justify-center bg-light px-4 pt-16">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-primary-100 bg-white p-8 shadow-sm">
+          <div className="mb-8 text-center">
+            <h1 className="font-heading text-2xl font-bold text-dark">Create an account</h1>
+            <p className="mt-1 text-sm text-muted">Join us for your next adventure</p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {error && (
+              <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
+            )}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Full name</label>
+              <input
+                placeholder="John Doe"
+                required
+                value={form.name}
+                onChange={update("name")}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                required
+                value={form.email}
+                onChange={update("email")}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Password</label>
+              <input
+                type="password"
+                placeholder="Min 6 characters"
+                required
+                minLength={6}
+                value={form.password}
+                onChange={update("password")}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Phone number</label>
+              <input
+                placeholder="07701234567"
+                required
+                value={form.phoneNumber}
+                onChange={update("phoneNumber")}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <button type="submit" className="mt-2 w-full rounded-full bg-primary-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
+              Register
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-muted">
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
+              Login
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
