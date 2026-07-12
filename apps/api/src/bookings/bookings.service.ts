@@ -29,6 +29,17 @@ export class BookingsService {
   async create(dto: CreateBookingDto, userId: number, phoneNumber: string) {
     const { tourId, passengerName, seatsBooked } = dto;
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { verified: true },
+    });
+
+    if (!user || !user.verified) {
+      throw new BadRequestException(
+        'Please verify your phone number before booking a tour.',
+      );
+    }
+
     let booking: Booking;
     try {
       booking = await this.prisma.$transaction(async (tx) => {
