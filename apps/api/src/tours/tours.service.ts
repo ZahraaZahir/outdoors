@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -17,6 +17,11 @@ export class ToursService {
   ) {}
 
   async create(dto: CreateTourDto) {
+    const tourDate = new Date(dto.date);
+    if (tourDate <= new Date()) {
+      throw new BadRequestException('Tour date must be in the future.');
+    }
+
     const geo = await this.geocoding.validateDestination(dto.destination);
     const maxSeats = dto.maxSeats ?? 30;
 
@@ -26,7 +31,7 @@ export class ToursService {
         destination: geo.displayName,
         latitude: geo.latitude,
         longitude: geo.longitude,
-        date: new Date(dto.date),
+        date: tourDate,
         priceIQD: dto.priceIQD,
         maxSeats: maxSeats,
         availableSeats: maxSeats,
