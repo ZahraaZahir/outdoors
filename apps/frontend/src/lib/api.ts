@@ -106,6 +106,10 @@ export const api = {
       body: JSON.stringify(data),
     }).then((booking) => { invalidate("/bookings"); invalidate("/tours"); return booking; }),
 
+  cancelBooking: (id: number) =>
+    request<{ message: string }>(`/bookings/${id}/cancel`, { method: "PATCH" })
+      .then((res) => { invalidate("/bookings"); invalidate("/tours"); return res; }),
+
   prefetchTour: (id: number) => {
     const path = `/tours/${id}`;
     const key = `GET:${path}`;

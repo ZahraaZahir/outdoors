@@ -1,11 +1,4 @@
-import {
-  IsNotEmpty,
-  IsInt,
-  IsString,
-  Min,
-  Max,
-  Length,
-} from 'class-validator';
+import { IsNotEmpty, IsInt, IsString, Min, Max, Length } from 'class-validator';
 import { MAX_SEATS_PER_USER_TOTAL } from '../bookings.constants.js';
 
 export class CreateBookingDto {
@@ -15,7 +8,9 @@ export class CreateBookingDto {
 
   @IsNotEmpty()
   @IsString()
-  @Length(2, 100, { message: 'Passenger name must be between 2 and 100 characters.' })
+  @Length(2, 100, {
+    message: 'Passenger name must be between 2 and 100 characters.',
+  })
   passengerName!: string;
 
   @IsNotEmpty()

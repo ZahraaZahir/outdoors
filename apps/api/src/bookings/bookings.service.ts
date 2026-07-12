@@ -62,7 +62,9 @@ export class BookingsService {
         }
 
         if (new Date(targetTour.date) <= new Date()) {
-          throw new BadRequestException('Cannot book a tour that has already passed.');
+          throw new BadRequestException(
+            'Cannot book a tour that has already passed.',
+          );
         }
 
         const targetDate = new Date(targetTour.date);
@@ -154,8 +156,53 @@ export class BookingsService {
   async findMine(userId: number) {
     return this.prisma.booking.findMany({
       where: { userId },
-      include: { tour: { select: { id: true, title: true, destination: true, date: true } } },
+      include: {
+        tour: {
+          select: { id: true, title: true, destination: true, date: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async cancel(bookingId: number, userId: number) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { tour: true },
+    });
+
+    if (!booking) {
+      throw new BadRequestException('Booking not found.');
+    }
+
+    if (booking.userId !== userId) {
+      throw new BadRequestException('You can only cancel your own bookings.');
+    }
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw new BadRequestException('Booking is already cancelled.');
+    }
+
+    if (new Date(booking.tour.date) <= new Date()) {
+      throw new BadRequestException(
+        'Cannot cancel a booking for a tour that has already passed.',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: BookingStatus.CANCELLED },
+      });
+
+      await tx.tour.update({
+        where: { id: booking.tourId },
+        data: { availableSeats: { increment: booking.seatsBooked } },
+      });
+    });
+
+    await this.cacheManager.del(TOURS_CACHE_KEY);
+
+    return { message: 'Booking cancelled. Seats restored.' };
   }
 }

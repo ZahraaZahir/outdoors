@@ -5,6 +5,7 @@ import type { Booking } from "../lib/types";
 const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: "bg-yellow-50", text: "text-yellow-700" },
   CONFIRMED: { bg: "bg-primary-50", text: "text-primary-700" },
+  CANCELLED: { bg: "bg-gray-50", text: "text-gray-500" },
   FAILED: { bg: "bg-red-50", text: "text-red-700" },
 };
 
@@ -27,10 +28,30 @@ function BookingSkeleton() {
 export default function MyBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   useEffect(() => {
     api.getBookings().then(setBookings).finally(() => setLoading(false));
   }, []);
+
+  const handleCancel = async (id: number) => {
+    if (!confirm("Cancel this booking? Your seats will be released.")) return;
+    setCancellingId(id);
+    try {
+      await api.cancelBooking(id);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "CANCELLED" as const } : b))
+      );
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const canCancel = (b: Booking) =>
+    (b.status === "PENDING" || b.status === "CONFIRMED") &&
+    new Date(b.tour?.date ?? b.createdAt) > new Date();
 
   return (
     <div className="pt-24 pb-20">
@@ -67,11 +88,22 @@ export default function MyBookings() {
                       {b.seatsBooked} {b.seatsBooked === 1 ? "seat" : "seats"} &middot; {b.passengerName}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${style.bg} ${style.text}`}>
-                      {b.status}
-                    </span>
-                    <p className="mt-1.5 text-xs text-muted">{new Date(b.createdAt).toLocaleDateString()}</p>
+                  <div className="flex items-center gap-3">
+                    {canCancel(b) && (
+                      <button
+                        onClick={() => handleCancel(b.id)}
+                        disabled={cancellingId === b.id}
+                        className="rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                      >
+                        {cancellingId === b.id ? "Cancelling..." : "Cancel"}
+                      </button>
+                    )}
+                    <div className="text-right">
+                      <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${style.bg} ${style.text}`}>
+                        {b.status}
+                      </span>
+                      <p className="mt-1.5 text-xs text-muted">{new Date(b.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
                 </div>
               );

@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
@@ -27,5 +36,13 @@ export class BookingsController {
   @Get()
   async findMine(@CurrentUser() user: UserPayload) {
     return this.bookingsService.findMine(user.id);
+  }
+
+  @Patch(':id/cancel')
+  async cancel(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserPayload,
+  ) {
+    return this.bookingsService.cancel(id, user.id);
   }
 }
