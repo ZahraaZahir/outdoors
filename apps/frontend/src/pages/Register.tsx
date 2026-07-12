@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", phoneNumber: "" });
+  const [form, setForm] = useState({ name: "", password: "", phoneNumber: "" });
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -13,7 +13,7 @@ export default function Register() {
     setError("");
     try {
       await register(form);
-      navigate("/login");
+      navigate(`/verify-phone?phone=${encodeURIComponent(form.phoneNumber)}`);
     } catch (err: any) {
       setError(err.message);
     }
@@ -45,13 +45,13 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark">Email</label>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Phone number</label>
               <input
-                type="email"
-                placeholder="you@example.com"
+                type="tel"
+                placeholder="07701234567"
                 required
-                value={form.email}
-                onChange={update("email")}
+                value={form.phoneNumber}
+                onChange={update("phoneNumber")}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
@@ -64,16 +64,6 @@ export default function Register() {
                 minLength={6}
                 value={form.password}
                 onChange={update("password")}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark">Phone number</label>
-              <input
-                placeholder="07701234567"
-                required
-                value={form.phoneNumber}
-                onChange={update("phoneNumber")}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>

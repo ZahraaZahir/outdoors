@@ -13,6 +13,7 @@ const MyBookings = lazy(() => import("./pages/MyBookings"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const CreateTour = lazy(() => import("./pages/CreateTour"));
 const EditTour = lazy(() => import("./pages/EditTour"));
+const VerifyPhone = lazy(() => import("./pages/VerifyPhone"));
 
 function PageSkeleton() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/tours/:id" element={<TourDetail />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-phone" element={<VerifyPhone />} />
               <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/tours/new" element={<AdminRoute><CreateTour /></AdminRoute>} />

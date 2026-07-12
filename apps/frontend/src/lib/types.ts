@@ -1,9 +1,9 @@
 export interface User {
   id: number;
   name: string;
-  email: string;
   phoneNumber: string;
   role: "TRAVELER" | "ADMIN";
+  verified: boolean;
   createdAt: string;
 }
 

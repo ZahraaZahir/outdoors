@@ -5,8 +5,8 @@ import type { User } from "../lib/types";
 interface AuthState {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; phoneNumber: string }) => Promise<void>;
+  login: (phoneNumber: string, password: string) => Promise<void>;
+  register: (data: { name: string; password: string; phoneNumber: string }) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -16,7 +16,14 @@ const AuthContext = createContext<AuthState | null>(null);
 function parseJwt(token: string): User | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return { id: payload.sub, email: payload.email, role: payload.role, name: "", phoneNumber: "", createdAt: "" };
+    return {
+      id: payload.sub,
+      phoneNumber: payload.phoneNumber,
+      role: payload.role,
+      name: "",
+      verified: false,
+      createdAt: "",
+    };
   } catch {
     return null;
   }
@@ -71,15 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [token, refreshAccessToken]);
 
-  const login = async (email: string, password: string) => {
-    const res = await api.login({ email, password });
+  const login = async (phoneNumber: string, password: string) => {
+    const res = await api.login({ phoneNumber, password });
     localStorage.setItem("token", res.accessToken);
     localStorage.setItem("refreshToken", res.refreshToken);
     setToken(res.accessToken);
     setUser(parseJwt(res.accessToken));
   };
 
-  const register = async (data: { name: string; email: string; password: string; phoneNumber: string }) => {
+  const register = async (data: { name: string; password: string; phoneNumber: string }) => {
     await api.register(data);
   };
 

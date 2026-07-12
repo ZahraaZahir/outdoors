@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -13,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
+      await login(phoneNumber, password);
       navigate("/");
     } catch (err: any) {
       setError(err.message);
@@ -33,13 +33,13 @@ export default function Login() {
               <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
             )}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark">Email</label>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Phone number</label>
               <input
-                type="email"
-                placeholder="you@example.com"
+                type="tel"
+                placeholder="07701234567"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>

@@ -103,13 +103,25 @@ function invalidate(pattern?: string) {
 }
 
 export const api = {
-  register: (data: { name: string; email: string; password: string; phoneNumber: string }) =>
-    request<{ id: number; name: string; email: string; role: string }>("/auth/register", {
+  register: (data: { name: string; password: string; phoneNumber: string }) =>
+    request<{ id: number; name: string; phoneNumber: string; role: string; verified: boolean }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  login: (data: { email: string; password: string }) =>
+  verifyPhone: (data: { phoneNumber: string; code: string }) =>
+    request<{ message: string }>("/auth/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  resendOtp: (phoneNumber: string) =>
+    request<{ message: string }>("/auth/resend-otp", {
+      method: "POST",
+      body: JSON.stringify({ phoneNumber }),
+    }),
+
+  login: (data: { phoneNumber: string; password: string }) =>
     request<{ accessToken: string; refreshToken: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),

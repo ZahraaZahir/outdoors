@@ -39,7 +39,7 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
-              <span className="text-xs text-muted">{user.email}</span>
+              <span className="text-xs text-muted">{user.phoneNumber}</span>
               <button onClick={handleLogout} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
                 Logout
               </button>
@@ -89,7 +89,7 @@ export default function Navbar() {
                     </Link>
                   </>
                 )}
-                <span className="text-xs text-muted">{user.email}</span>
+                <span className="text-xs text-muted">{user.phoneNumber}</span>
                 <button onClick={handleLogout} className="text-left text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
                   Logout
                 </button>
