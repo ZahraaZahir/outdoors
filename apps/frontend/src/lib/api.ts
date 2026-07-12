@@ -53,11 +53,7 @@ async function cachedRequest<T>(path: string, options?: RequestInit): Promise<T>
     return promise;
   }
 
-  const data = await request<T>(path, options);
-  if (isGET()) {
-    cache.set(key, { data, timestamp: Date.now() });
-  }
-  return data;
+  return request<T>(path, options);
 }
 
 function invalidate(pattern?: string) {
