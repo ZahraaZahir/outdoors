@@ -56,6 +56,33 @@ export class BookingsService {
           );
         }
 
+        const targetTour = await tx.tour.findUnique({ where: { id: tourId } });
+        if (!targetTour) {
+          throw new BadRequestException('Tour not found.');
+        }
+
+        const targetDate = new Date(targetTour.date);
+        const dayStart = new Date(targetDate);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(targetDate);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        const conflict = await tx.booking.findFirst({
+          where: {
+            userId,
+            status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+            tour: {
+              date: { gte: dayStart, lte: dayEnd },
+            },
+          },
+        });
+
+        if (conflict) {
+          throw new BadRequestException(
+            'You already have a booking on this date. You cannot attend two tours on the same day.',
+          );
+        }
+
         const currentlyBooked = existingBookings._sum.seatsBooked || 0;
 
         if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_TOTAL) {
