@@ -9,6 +9,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateTourDto } from './dtos/create-tour.dto.js';
+import { UpdateTourDto } from './dtos/update-tour.dto.js';
 import { TOURS_CACHE_KEY, TOURS_TTL } from './tours.constants.js';
 import { GeocodingService } from './geocoding.service.js';
 
@@ -74,5 +75,71 @@ export class ToursService {
       throw new NotFoundException(`Tour with ID ${id} not found`);
     }
     return tour;
+  }
+
+  async update(id: number, dto: UpdateTourDto) {
+    const existing = await this.prisma.tour.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Tour with ID ${id} not found`);
+    }
+
+    const data: Record<string, unknown> = {};
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.date !== undefined) {
+      const tourDate = new Date(dto.date);
+      if (tourDate <= new Date()) {
+        throw new BadRequestException('Tour date must be in the future.');
+      }
+      data.date = tourDate;
+    }
+    if (dto.priceIQD !== undefined) data.priceIQD = dto.priceIQD;
+    if (dto.imageUrl !== undefined) data.imageUrl = dto.imageUrl;
+
+    if (dto.destination !== undefined && dto.destination !== existing.destination) {
+      const geo = await this.geocoding.validateDestination(dto.destination);
+      data.destination = geo.displayName;
+      data.latitude = geo.latitude;
+      data.longitude = geo.longitude;
+    }
+
+    if (dto.maxSeats !== undefined && dto.maxSeats !== existing.maxSeats) {
+      const booked = existing.maxSeats - existing.availableSeats;
+      if (dto.maxSeats < booked) {
+        throw new BadRequestException(
+          `Max seats cannot be less than ${booked} (already booked).`,
+        );
+      }
+      data.maxSeats = dto.maxSeats;
+      data.availableSeats = dto.maxSeats - booked;
+    }
+
+    const tour = await this.prisma.tour.update({ where: { id }, data });
+    await this.cacheManager.del(TOURS_CACHE_KEY);
+    return tour;
+  }
+
+  async remove(id: number) {
+    const existing = await this.prisma.tour.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Tour with ID ${id} not found`);
+    }
+
+    const activeBookings = await this.prisma.booking.count({
+      where: {
+        tourId: id,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+    });
+
+    if (activeBookings > 0) {
+      throw new BadRequestException(
+        'Cannot delete a tour with active bookings. Cancel or complete them first.',
+      );
+    }
+
+    await this.prisma.tour.delete({ where: { id } });
+    await this.cacheManager.del(TOURS_CACHE_KEY);
+    return { message: 'Tour deleted.' };
   }
 }

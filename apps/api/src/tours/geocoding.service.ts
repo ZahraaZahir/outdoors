@@ -25,7 +25,9 @@ export class GeocodingService {
 
     if (!res.ok) {
       this.logger.warn(`Nominatim request failed: ${res.status}`);
-      throw new BadRequestException('Unable to validate location. Please try again.');
+      throw new BadRequestException(
+        'Unable to validate location. Please try again.',
+      );
     }
 
     const results = (await res.json()) as Array<{

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Tour, Booking } from "../lib/types";
 
@@ -15,12 +16,26 @@ export default function AdminDashboard() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([api.getTours(), api.getBookings()])
       .then(([t, b]) => { setTours(t); setBookings(b); })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this tour? This cannot be undone.")) return;
+    setDeletingId(id);
+    try {
+      await api.deleteTour(id);
+      setTours((prev) => prev.filter((t) => t.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -75,8 +90,15 @@ export default function AdminDashboard() {
   return (
     <div className="pt-24 pb-20">
       <div className="mx-auto max-w-6xl px-4 lg:px-6">
-        <h1 className="font-heading text-3xl font-bold text-dark">Admin Dashboard</h1>
-        <p className="mt-2 text-muted">Overview of your tour operations</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-heading text-3xl font-bold text-dark">Admin Dashboard</h1>
+            <p className="mt-2 text-muted">Overview of your tour operations</p>
+          </div>
+          <Link to="/admin/tours/new" className="rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
+            New Tour
+          </Link>
+        </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
           {stats.map((stat) => (
@@ -90,6 +112,49 @@ export default function AdminDashboard() {
               <p className="mt-3 font-heading text-2xl font-bold text-dark">{stat.value}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12">
+          <h2 className="font-heading text-xl font-semibold text-dark">Tours</h2>
+          <div className="mt-4 overflow-hidden rounded-2xl border border-primary-100 bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-primary-100 bg-primary-50/50">
+                <tr>
+                  <th className="px-5 py-3 font-medium text-dark">Title</th>
+                  <th className="px-5 py-3 font-medium text-dark">Date</th>
+                  <th className="px-5 py-3 font-medium text-dark">Price</th>
+                  <th className="px-5 py-3 font-medium text-dark">Seats</th>
+                  <th className="px-5 py-3 font-medium text-dark">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tours.map((tour) => (
+                  <tr key={tour.id} className="border-b border-primary-50 last:border-0">
+                    <td className="px-5 py-3">
+                      <Link to={`/tours/${tour.id}`} className="font-medium text-dark hover:text-primary-600">{tour.title}</Link>
+                    </td>
+                    <td className="px-5 py-3 text-muted">{new Date(tour.date).toLocaleDateString()}</td>
+                    <td className="px-5 py-3 text-muted">{tour.priceIQD.toLocaleString()} IQD</td>
+                    <td className="px-5 py-3 text-muted">{tour.availableSeats}/{tour.maxSeats}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link to={`/admin/tours/${tour.id}/edit`} className="rounded-lg bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700 hover:bg-primary-100">
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(tour.id)}
+                          disabled={deletingId === tour.id}
+                          className="rounded-lg bg-red-50 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                        >
+                          {deletingId === tour.id ? "..." : "Delete"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

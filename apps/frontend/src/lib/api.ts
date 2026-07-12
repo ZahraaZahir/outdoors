@@ -88,6 +88,16 @@ export const api = {
       body: JSON.stringify(data),
     }).then((tour) => { invalidate("/tours"); return tour; }),
 
+  updateTour: (id: number, data: { title?: string; description?: string; destination?: string; date?: string; priceIQD?: number; maxSeats?: number; imageUrl?: string }) =>
+    request<import("./types").Tour>(`/tours/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }).then((tour) => { invalidate("/tours"); return tour; }),
+
+  deleteTour: (id: number) =>
+    request<void>(`/tours/${id}`, { method: "DELETE" })
+      .then(() => { invalidate("/tours"); }),
+
   getBookings: () => cachedRequest<import("./types").Booking[]>("/bookings"),
 
   createBooking: (data: { tourId: number; passengerName: string; seatsBooked: number }) =>
