@@ -124,13 +124,13 @@ export const api = {
   getTours: () => cachedRequest<import("./types").Tour[]>("/tours"),
   getTour: (id: number) => cachedRequest<import("./types").Tour>(`/tours/${id}`),
 
-  createTour: (data: { title: string; description?: string; destination: string; date: string; priceIQD: number; maxSeats?: number; imageUrl?: string }) =>
+  createTour: (data: { title: string; description?: string; destination: string; date: string; priceIQD: number; maxSeats?: number; imageUrl?: string; latitude?: number; longitude?: number }) =>
     request<import("./types").Tour>("/tours", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((tour) => { invalidate("/tours"); return tour; }),
 
-  updateTour: (id: number, data: { title?: string; description?: string; destination?: string; date?: string; priceIQD?: number; maxSeats?: number; imageUrl?: string }) =>
+  updateTour: (id: number, data: { title?: string; description?: string; destination?: string; date?: string; priceIQD?: number; maxSeats?: number; imageUrl?: string; latitude?: number; longitude?: number }) =>
     request<import("./types").Tour>(`/tours/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),

@@ -12,6 +12,8 @@ export interface Tour {
   title: string;
   description: string;
   destination: string;
+  latitude: number | null;
+  longitude: number | null;
   date: string;
   priceIQD: number;
   imageUrl: string | null;

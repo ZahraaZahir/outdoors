@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { useIraqCities } from "../hooks/useIraqCities";
 
 export default function EditTour() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const tourId = Number(id);
+  const { cities, loading: citiesLoading } = useIraqCities();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -14,6 +16,7 @@ export default function EditTour() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [destination, setDestination] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [date, setDate] = useState("");
   const [priceIQD, setPriceIQD] = useState(0);
   const [maxSeats, setMaxSeats] = useState(30);
@@ -25,6 +28,9 @@ export default function EditTour() {
       setTitle(tour.title);
       setDescription(tour.description || "");
       setDestination(tour.destination);
+      if (tour.latitude != null && tour.longitude != null) {
+        setCoords({ lat: tour.latitude, lng: tour.longitude });
+      }
       setDate(new Date(tour.date).toISOString().slice(0, 16));
       setPriceIQD(tour.priceIQD);
       setMaxSeats(tour.maxSeats);
@@ -32,6 +38,13 @@ export default function EditTour() {
     }).catch(() => setError("Tour not found."))
       .finally(() => setLoading(false));
   }, [tourId]);
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const name = e.target.value;
+    const city = cities.find((c) => c.name === name);
+    setDestination(name);
+    setCoords(city ? { lat: city.latitude, lng: city.longitude } : null);
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,6 +77,8 @@ export default function EditTour() {
         title,
         description: description || undefined,
         destination,
+        latitude: coords?.lat,
+        longitude: coords?.lng,
         date: new Date(date).toISOString(),
         priceIQD,
         maxSeats,
@@ -112,8 +127,23 @@ export default function EditTour() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-dark">Destination</label>
-            <input type="text" required value={destination} onChange={(e) => setDestination(e.target.value)}
-              className="w-full rounded-2xl border border-primary-200 bg-primary-50/30 px-4 py-3 text-dark placeholder:text-muted/50 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none" />
+            {citiesLoading ? (
+              <div className="h-12 w-full animate-pulse rounded-2xl bg-gray-100" />
+            ) : (
+              <select
+                required
+                value={destination}
+                onChange={handleCityChange}
+                className="w-full rounded-2xl border border-primary-200 bg-primary-50/30 px-4 py-3 text-dark placeholder:text-muted/50 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none"
+              >
+                <option value="">Select a city in Iraq</option>
+                {cities.map((city) => (
+                  <option key={city.name} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>

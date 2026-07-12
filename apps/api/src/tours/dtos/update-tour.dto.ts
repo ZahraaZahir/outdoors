@@ -1,6 +1,7 @@
 import {
   IsString,
   IsInt,
+  IsNumber,
   IsDateString,
   IsOptional,
   Min,
@@ -26,6 +27,14 @@ export class UpdateTourDto {
     message: 'Destination must be between 2 and 100 characters.',
   })
   destination?: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 
   @IsOptional()
   @IsDateString()

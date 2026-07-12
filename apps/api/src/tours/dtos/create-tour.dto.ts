@@ -2,6 +2,7 @@ import {
   IsNotEmpty,
   IsString,
   IsInt,
+  IsNumber,
   IsDateString,
   IsOptional,
   Min,
@@ -31,6 +32,14 @@ export class CreateTourDto {
     message: 'Destination must be between 2 and 100 characters.',
   })
   destination!: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 
   @IsNotEmpty()
   @IsDateString()

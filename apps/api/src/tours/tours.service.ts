@@ -29,16 +29,30 @@ export class ToursService {
       throw new BadRequestException('Tour date must be in the future.');
     }
 
-    const geo = await this.geocoding.validateDestination(dto.destination);
+    let displayName: string;
+    let latitude: number | null;
+    let longitude: number | null;
+
+    if (dto.latitude !== undefined && dto.longitude !== undefined) {
+      displayName = dto.destination;
+      latitude = dto.latitude;
+      longitude = dto.longitude;
+    } else {
+      const geo = await this.geocoding.validateDestination(dto.destination);
+      displayName = geo.displayName;
+      latitude = geo.latitude;
+      longitude = geo.longitude;
+    }
+
     const maxSeats = dto.maxSeats ?? 30;
 
     const tour = await this.prisma.tour.create({
       data: {
         title: dto.title,
         description: dto.description ?? '',
-        destination: geo.displayName,
-        latitude: geo.latitude,
-        longitude: geo.longitude,
+        destination: displayName,
+        latitude,
+        longitude,
         date: tourDate,
         priceIQD: dto.priceIQD,
         imageUrl: dto.imageUrl ?? null,
@@ -97,10 +111,16 @@ export class ToursService {
     if (dto.imageUrl !== undefined) data.imageUrl = dto.imageUrl;
 
     if (dto.destination !== undefined && dto.destination !== existing.destination) {
-      const geo = await this.geocoding.validateDestination(dto.destination);
-      data.destination = geo.displayName;
-      data.latitude = geo.latitude;
-      data.longitude = geo.longitude;
+      if (dto.latitude !== undefined && dto.longitude !== undefined) {
+        data.destination = dto.destination;
+        data.latitude = dto.latitude;
+        data.longitude = dto.longitude;
+      } else {
+        const geo = await this.geocoding.validateDestination(dto.destination);
+        data.destination = geo.displayName;
+        data.latitude = geo.latitude;
+        data.longitude = geo.longitude;
+      }
     }
 
     if (dto.maxSeats !== undefined && dto.maxSeats !== existing.maxSeats) {

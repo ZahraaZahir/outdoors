@@ -1,11 +1,14 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { useIraqCities } from "../hooks/useIraqCities";
 
 export default function CreateTour() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { cities, loading: citiesLoading } = useIraqCities();
   const [form, setForm] = useState({ title: "", description: "", destination: "", date: "", priceIQD: 0, maxSeats: 30 });
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -16,6 +19,13 @@ export default function CreateTour() {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const name = e.target.value;
+    const city = cities.find((c) => c.name === name);
+    setForm((prev) => ({ ...prev, destination: name }));
+    setCoords(city ? { lat: city.latitude, lng: city.longitude } : null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +50,12 @@ export default function CreateTour() {
         const data = await res.json();
         imageUrl = data.url;
       }
-      await api.createTour({ ...form, imageUrl });
+      await api.createTour({
+        ...form,
+        imageUrl,
+        latitude: coords?.lat,
+        longitude: coords?.lng,
+      });
       navigate("/");
     } catch (err: any) {
       setError(err.message);
@@ -76,13 +91,23 @@ export default function CreateTour() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-dark">Destination</label>
-              <input
-                placeholder="e.g. Dukan, Sulaymaniyah"
-                required
-                value={form.destination}
-                onChange={update("destination")}
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-              />
+              {citiesLoading ? (
+                <div className="h-10 w-full animate-pulse rounded-xl bg-gray-100" />
+              ) : (
+                <select
+                  required
+                  value={form.destination}
+                  onChange={handleCityChange}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                >
+                  <option value="">Select a city in Iraq</option>
+                  {cities.map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-dark">Description</label>
