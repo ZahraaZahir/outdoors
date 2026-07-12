@@ -58,11 +58,20 @@ export class SmsProcessor extends WorkerHost {
 
       if (job.attemptsMade >= SMS_MAX_ATTEMPTS) {
         this.logger.error(
-          `Booking ${bookingId} exhausted all ${SMS_MAX_ATTEMPTS} attempts, marking as FAILED.`,
+          `Booking ${bookingId} exhausted all ${SMS_MAX_ATTEMPTS} attempts, marking as FAILED and restoring seats.`,
         );
-        await this.prisma.booking.update({
-          where: { id: bookingId },
-          data: { status: BookingStatus.FAILED },
+        await this.prisma.$transaction(async (tx) => {
+          const failedBooking = await tx.booking.update({
+            where: { id: bookingId },
+            data: { status: BookingStatus.FAILED },
+            select: { tourId: true, seatsBooked: true },
+          });
+          await tx.tour.update({
+            where: { id: failedBooking.tourId },
+            data: {
+              availableSeats: { increment: failedBooking.seatsBooked },
+            },
+          });
         });
         return;
       }
