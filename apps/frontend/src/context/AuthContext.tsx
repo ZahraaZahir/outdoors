@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { api } from "../lib/api";
 import type { User } from "../lib/types";
 
@@ -27,16 +27,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token) {
-      setUser(parseJwt(token));
+  const refreshAccessToken = useCallback(async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) return false;
+    try {
+      const res = await api.refresh(refreshToken);
+      localStorage.setItem("token", res.accessToken);
+      setToken(res.accessToken);
+      setUser(parseJwt(res.accessToken));
+      return true;
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      setToken(null);
+      setUser(null);
+      return false;
     }
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const expiresAt = payload.exp * 1000;
+    const now = Date.now();
+    const timeUntilExpiry = expiresAt - now;
+
+    if (timeUntilExpiry <= 0) {
+      refreshAccessToken().finally(() => setLoading(false));
+      return;
+    }
+
+    setUser(parseJwt(token));
+
+    const refreshBuffer = 60_000;
+    const refreshIn = Math.max(timeUntilExpiry - refreshBuffer, 5_000);
+    const timer = setTimeout(() => { refreshAccessToken(); }, refreshIn);
+
     setLoading(false);
-  }, [token]);
+    return () => clearTimeout(timer);
+  }, [token, refreshAccessToken]);
 
   const login = async (email: string, password: string) => {
     const res = await api.login({ email, password });
     localStorage.setItem("token", res.accessToken);
+    localStorage.setItem("refreshToken", res.refreshToken);
     setToken(res.accessToken);
     setUser(parseJwt(res.accessToken));
   };
@@ -47,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     setToken(null);
     setUser(null);
   };

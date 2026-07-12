@@ -9,6 +9,27 @@ const cache = new Map<string, CacheEntry<unknown>>();
 const inflight = new Map<string, Promise<unknown>>();
 const STALE_MS = 60_000;
 
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+async function doRefresh(): Promise<string | null> {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) return null;
+  try {
+    const res = await fetch(`${BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    localStorage.setItem("token", data.accessToken);
+    return data.accessToken;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
@@ -17,7 +38,22 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  let res = await fetch(`${BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401 && token) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = doRefresh();
+    }
+    const newToken = await refreshPromise;
+    isRefreshing = false;
+    refreshPromise = null;
+
+    if (newToken) {
+      headers["Authorization"] = `Bearer ${newToken}`;
+      res = await fetch(`${BASE}${path}`, { ...options, headers });
+    }
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -74,9 +110,15 @@ export const api = {
     }),
 
   login: (data: { email: string; password: string }) =>
-    request<{ accessToken: string }>("/auth/login", {
+    request<{ accessToken: string; refreshToken: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+
+  refresh: (refreshToken: string) =>
+    request<{ accessToken: string }>("/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
     }),
 
   getTours: () => cachedRequest<import("./types").Tour[]>("/tours"),
