@@ -61,6 +61,10 @@ export class BookingsService {
           throw new BadRequestException('Tour not found.');
         }
 
+        if (new Date(targetTour.date) <= new Date()) {
+          throw new BadRequestException('Cannot book a tour that has already passed.');
+        }
+
         const targetDate = new Date(targetTour.date);
         const dayStart = new Date(targetDate);
         dayStart.setHours(0, 0, 0, 0);
