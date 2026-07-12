@@ -54,7 +54,7 @@ export default function TourList() {
         tour.title.toLowerCase().includes(search.toLowerCase()) ||
         tour.destination.toLowerCase().includes(search.toLowerCase());
       const matchesDate =
-        !dateFilter || new Date(tour.date).toLocaleDateString('sv-SE') >= dateFilter;
+        !dateFilter || new Date(tour.date).toLocaleDateString('sv-SE') === dateFilter;
       return matchesSearch && matchesDate;
     });
   }, [tours, search, dateFilter]);
