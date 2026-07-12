@@ -26,7 +26,7 @@ export interface Booking {
   passengerName: string;
   phoneNumber: string;
   seatsBooked: number;
-  status: "PENDING" | "CONFIRMED" | "FAILED";
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
   createdAt: string;
   tour?: Pick<Tour, "id" | "title" | "destination" | "date">;
 }
