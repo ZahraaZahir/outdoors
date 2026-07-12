@@ -4,6 +4,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateTourDto } from './dtos/create-tour.dto.js';
 import { TOURS_CACHE_KEY, TOURS_TTL } from './tours.constants.js';
+import { GeocodingService } from './geocoding.service.js';
 
 @Injectable()
 export class ToursService {
@@ -11,15 +12,20 @@ export class ToursService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly geocoding: GeocodingService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async create(dto: CreateTourDto) {
+    const geo = await this.geocoding.validateDestination(dto.destination);
     const maxSeats = dto.maxSeats ?? 30;
+
     const tour = await this.prisma.tour.create({
       data: {
         title: dto.title,
-        destination: dto.destination,
+        destination: geo.displayName,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
         date: new Date(dto.date),
         priceIQD: dto.priceIQD,
         maxSeats: maxSeats,
