@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Tour } from "../lib/types";
@@ -6,7 +6,7 @@ import type { Tour } from "../lib/types";
 function TourCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-primary-100 bg-white animate-pulse">
-      <div className="h-48 bg-primary-100/50" />
+      <div className="h-56 bg-primary-100/50" />
       <div className="p-5">
         <div className="mb-2 h-5 w-3/4 rounded bg-gray-200" />
         <div className="mb-2 h-4 w-1/2 rounded bg-gray-200" />
@@ -20,53 +20,151 @@ function TourCardSkeleton() {
   );
 }
 
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          className={`h-3.5 w-3.5 ${star <= rating ? "text-amber-400" : "text-gray-200"}`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+function getDurationLabel(tour: Tour): string {
+  const now = new Date();
+  const tourDate = new Date(tour.date);
+  const diffMs = tourDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 1) return "Tomorrow";
+  if (diffDays <= 7) return `${diffDays} days`;
+  if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks`;
+  return "Upcoming";
+}
+
+function getLocationShort(destination: string): string {
+  const parts = destination.split(",");
+  return parts[0].trim();
+}
+
 export default function TourList() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     api.getTours().then(setTours).finally(() => setLoading(false));
   }, []);
 
+  const filtered = useMemo(() => {
+    return tours.filter((tour) => {
+      const matchesSearch =
+        !search ||
+        tour.title.toLowerCase().includes(search.toLowerCase()) ||
+        tour.destination.toLowerCase().includes(search.toLowerCase());
+      const matchesDate =
+        !dateFilter || new Date(tour.date).toISOString().slice(0, 10) >= dateFilter;
+      return matchesSearch && matchesDate;
+    });
+  }, [tours, search, dateFilter]);
+
   return (
     <div>
-      <section className="bg-primary-50 pt-24 pb-20">
-        <div className="mx-auto max-w-6xl px-4 lg:px-6">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div>
-              <h1 className="font-heading text-4xl font-bold leading-tight text-dark lg:text-5xl">
-                Discover the beauty of Kurdistan
-              </h1>
-              <p className="mt-4 text-lg text-muted">
-                Outdoor experiences. Real connections. Book your next adventure through mountains, valleys, and hidden gems.
-              </p>
-              <div className="mt-8 flex gap-3">
-                <a href="#tours" className="rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
-                  Browse Tours
-                </a>
-                <a href="#tours" className="rounded-full border border-primary-200 px-6 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-100">
-                  View All
-                </a>
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 pt-28 pb-20">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-300 blur-3xl" />
+          <div className="absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-primary-400 blur-3xl" />
+        </div>
+        <div className="relative mx-auto max-w-6xl px-4 lg:px-6">
+          <div className="max-w-2xl">
+            <h1 className="font-heading text-4xl font-bold leading-tight text-white lg:text-5xl">
+              Explore the beauty of Kurdistan
+            </h1>
+            <p className="mt-4 text-lg text-primary-200">
+              Discover dream destinations, plan trips with like-minded adventurers. Outdoor experiences that create real connections.
+            </p>
+          </div>
+
+          <div className="mt-10 rounded-2xl bg-white/10 p-2 backdrop-blur-sm">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-1 items-center gap-3 rounded-xl bg-white px-4 py-3">
+                <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Where to?"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-transparent text-sm text-dark placeholder-muted focus:outline-none"
+                />
               </div>
-            </div>
-            <div className="relative hidden lg:block">
-              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-primary-200/40">
-                <div className="flex h-full items-center justify-center text-primary-600">
-                  <svg className="h-24 w-24 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-                  </svg>
-                </div>
+              <div className="flex flex-1 items-center gap-3 rounded-xl bg-white px-4 py-3">
+                <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full bg-transparent text-sm text-dark placeholder-muted focus:outline-none"
+                />
               </div>
-              <div className="absolute -bottom-4 -left-4 h-24 w-24 rounded-2xl bg-primary-200/60" />
+              <a
+                href="#tours"
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                Search
+              </a>
             </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-6 text-sm text-primary-200">
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+              </svg>
+              Kurdistan
+            </span>
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+              </svg>
+              {tours.length} tours
+            </span>
           </div>
         </div>
       </section>
 
       <section id="tours" className="py-20">
         <div className="mx-auto max-w-6xl px-4 lg:px-6">
-          <h2 className="font-heading text-3xl font-bold text-dark">Upcoming Tours</h2>
-          <p className="mt-2 text-muted">Find your next outdoor experience</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="font-heading text-3xl font-bold text-dark">Popular Destinations</h2>
+              <p className="mt-2 text-muted">Handpicked adventures for you</p>
+            </div>
+            {(search || dateFilter) && (
+              <button
+                onClick={() => { setSearch(""); setDateFilter(""); }}
+                className="text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
 
           {loading ? (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -74,7 +172,7 @@ export default function TourList() {
                 <TourCardSkeleton key={i} />
               ))}
             </div>
-          ) : tours.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="mt-16 flex flex-col items-center justify-center text-center">
               <div className="mb-4 rounded-full bg-primary-50 p-4">
                 <svg className="h-10 w-10 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -82,38 +180,66 @@ export default function TourList() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                 </svg>
               </div>
-              <p className="text-lg font-medium text-dark">No tours available yet</p>
-              <p className="mt-1 text-sm text-muted">Check back soon for new adventures.</p>
+              <p className="text-lg font-medium text-dark">
+                {search || dateFilter ? "No tours match your filters" : "No tours available yet"}
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                {search || dateFilter ? "Try adjusting your search." : "Check back soon for new adventures."}
+              </p>
             </div>
           ) : (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {tours.map((tour) => (
+              {filtered.map((tour) => (
                 <Link
                   key={tour.id}
                   to={`/tours/${tour.id}`}
-                  className="group overflow-hidden rounded-2xl border border-primary-100 bg-white transition-all hover:shadow-lg hover:shadow-primary-100/50"
+                  className="group overflow-hidden rounded-2xl border border-primary-100 bg-white transition-all hover:shadow-xl hover:shadow-primary-100/40"
                   onMouseEnter={() => api.prefetchTour(tour.id)}
                 >
-                  <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200/60">
-                    <div className="flex h-full items-center justify-center">
-                      <svg className="h-16 w-16 text-primary-400/50 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="h-20 w-20 text-white/20 transition-transform duration-500 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
                       </svg>
                     </div>
+                    <div className="absolute left-4 top-4 flex gap-2">
+                      <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-primary-700 backdrop-blur-sm">
+                        {getDurationLabel(tour)}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="flex items-center gap-1.5 text-white/90">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                        </svg>
+                        <span className="text-sm font-medium">{getLocationShort(tour.destination)}</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-heading text-lg font-semibold text-dark">{tour.title}</h3>
-                    <p className="mt-1 text-sm text-muted">{tour.destination}</p>
-                    <p className="mt-1 text-sm text-muted">
-                      {new Date(tour.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-heading text-lg font-semibold text-dark group-hover:text-primary-700 transition-colors">
+                        {tour.title}
+                      </h3>
+                      <StarRating rating={4} />
+                    </div>
+                    <p className="mt-1.5 text-sm text-muted">
+                      {new Date(tour.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                     </p>
                     <div className="mt-4 flex items-center justify-between border-t border-primary-100 pt-4">
-                      <span className="font-heading text-lg font-bold text-primary-700">
-                        {tour.priceIQD.toLocaleString()} IQD
-                      </span>
-                      <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
-                        {tour.availableSeats} seats left
-                      </span>
+                      <div>
+                        <span className="font-heading text-xl font-bold text-primary-700">
+                          {tour.priceIQD.toLocaleString()}
+                        </span>
+                        <span className="ml-1 text-sm text-muted">IQD</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted">{tour.availableSeats} seats</span>
+                        <span className="rounded-full bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors group-hover:bg-primary-700">
+                          Book Now
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>
