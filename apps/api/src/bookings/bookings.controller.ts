@@ -3,12 +3,7 @@ import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-
-interface AuthenticatedUser {
-  id: number;
-  email: string;
-  role: string;
-}
+import { UserPayload } from '../auth/interfaces/authenticated-request.interface.js';
 
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)
@@ -18,13 +13,13 @@ export class BookingsController {
   @Post()
   async create(
     @Body() dto: CreateBookingDto,
-    @CurrentUser() user: AuthenticatedUser,
+    @CurrentUser() user: UserPayload,
   ) {
     return this.bookingsService.create(dto, user.id);
   }
 
   @Get()
-  async findMine(@CurrentUser() user: AuthenticatedUser) {
+  async findMine(@CurrentUser() user: UserPayload) {
     return this.bookingsService.findMine(user.id);
   }
 }
