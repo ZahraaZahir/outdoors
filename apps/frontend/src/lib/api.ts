@@ -90,7 +90,7 @@ export const api = {
 
   getBookings: () => cachedRequest<import("./types").Booking[]>("/bookings"),
 
-  createBooking: (data: { tourId: number; passengerName: string; phoneNumber: string; seatsBooked: number }) =>
+  createBooking: (data: { tourId: number; passengerName: string; seatsBooked: number }) =>
     request<import("./types").Booking>("/bookings", {
       method: "POST",
       body: JSON.stringify(data),

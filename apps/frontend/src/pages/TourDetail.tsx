@@ -39,7 +39,7 @@ export default function TourDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [form, setForm] = useState({ passengerName: "", phoneNumber: "", seatsBooked: 1 });
+  const [form, setForm] = useState({ passengerName: "", seatsBooked: 1 });
 
   useEffect(() => {
     api.getTour(Number(id)).then(setTour).catch((e) => setError(e.message)).finally(() => setLoading(false));
@@ -170,16 +170,6 @@ export default function TourDetail() {
                         required
                         value={form.passengerName}
                         onChange={(e) => setForm((p) => ({ ...p, passengerName: e.target.value }))}
-                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-dark">Phone number</label>
-                      <input
-                        placeholder="07701234567"
-                        required
-                        value={form.phoneNumber}
-                        onChange={(e) => setForm((p) => ({ ...p, phoneNumber: e.target.value }))}
                         className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                       />
                     </div>
