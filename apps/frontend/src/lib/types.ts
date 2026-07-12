@@ -10,9 +10,11 @@ export interface User {
 export interface Tour {
   id: number;
   title: string;
+  description: string;
   destination: string;
   date: string;
   priceIQD: number;
+  imageUrl: string | null;
   maxSeats: number;
   availableSeats: number;
 }

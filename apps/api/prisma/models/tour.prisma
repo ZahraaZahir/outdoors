@@ -1,11 +1,13 @@
 model Tour {
     id             Int       @id @default(autoincrement())
     title          String
+    description    String    @default("")
     destination    String
     latitude       Float?
     longitude      Float?
     date           DateTime
     priceIQD       Int
+    imageUrl       String?
     maxSeats       Int       @default(30)
     availableSeats Int       @default(30)
     bookings       Booking[]

@@ -16,9 +16,16 @@ export class CreateTourDto {
   @Length(3, 100, { message: 'Title must be between 3 and 100 characters.' })
   title!: string;
 
+  @IsOptional()
+  @IsString()
+  @Length(0, 2000, { message: 'Description must not exceed 2000 characters.' })
+  description?: string;
+
   @IsNotEmpty()
   @IsString()
-  @Length(2, 100, { message: 'Destination must be between 2 and 100 characters.' })
+  @Length(2, 100, {
+    message: 'Destination must be between 2 and 100 characters.',
+  })
   destination!: string;
 
   @IsNotEmpty()

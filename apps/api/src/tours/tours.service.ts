@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -28,6 +34,7 @@ export class ToursService {
     const tour = await this.prisma.tour.create({
       data: {
         title: dto.title,
+        description: dto.description ?? '',
         destination: geo.displayName,
         latitude: geo.latitude,
         longitude: geo.longitude,

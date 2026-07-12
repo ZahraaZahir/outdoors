@@ -82,7 +82,7 @@ export const api = {
   getTours: () => cachedRequest<import("./types").Tour[]>("/tours"),
   getTour: (id: number) => cachedRequest<import("./types").Tour>(`/tours/${id}`),
 
-  createTour: (data: { title: string; destination: string; date: string; priceIQD: number; maxSeats?: number }) =>
+  createTour: (data: { title: string; description?: string; destination: string; date: string; priceIQD: number; maxSeats?: number }) =>
     request<import("./types").Tour>("/tours", {
       method: "POST",
       body: JSON.stringify(data),

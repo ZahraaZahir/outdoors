@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 
 export default function CreateTour() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: "", destination: "", date: "", priceIQD: 0, maxSeats: 30 });
+  const [form, setForm] = useState({ title: "", description: "", destination: "", date: "", priceIQD: 0, maxSeats: 30 });
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +51,16 @@ export default function CreateTour() {
                 value={form.destination}
                 onChange={update("destination")}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Description</label>
+              <textarea
+                placeholder="Describe the tour experience..."
+                rows={4}
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
               />
             </div>
             <div>

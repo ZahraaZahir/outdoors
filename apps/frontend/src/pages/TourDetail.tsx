@@ -115,8 +115,7 @@ export default function TourDetail() {
             <div className="mt-8">
               <h2 className="font-heading text-xl font-semibold text-dark">About this tour</h2>
               <p className="mt-3 leading-relaxed text-muted">
-                Join us for an unforgettable adventure to {tour.destination}. This tour offers breathtaking views,
-                authentic experiences, and lasting memories. Limited seats available — book now to secure your spot.
+                {tour.description || `Join us for an unforgettable adventure to ${tour.destination}. This tour offers breathtaking views, authentic experiences, and lasting memories. Limited seats available — book now to secure your spot.`}
               </p>
             </div>
 
