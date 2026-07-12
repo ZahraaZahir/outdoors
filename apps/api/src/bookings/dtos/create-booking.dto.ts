@@ -4,7 +4,7 @@ import {
   IsString,
   Min,
   Max,
-  Matches,
+  Length,
 } from 'class-validator';
 import { MAX_SEATS_PER_USER_TOTAL } from '../bookings.constants.js';
 
@@ -15,15 +15,8 @@ export class CreateBookingDto {
 
   @IsNotEmpty()
   @IsString()
+  @Length(2, 100, { message: 'Passenger name must be between 2 and 100 characters.' })
   passengerName!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @Matches(/^(?:\+964|0)?7[5789]\d{8}$/, {
-    message:
-      'Phone number must be a valid Iraqi mobile format (Zain, Asiacell, or Korek)',
-  })
-  phoneNumber!: string;
 
   @IsNotEmpty()
   @IsInt()

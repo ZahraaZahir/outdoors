@@ -26,8 +26,8 @@ export class BookingsService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  async create(dto: CreateBookingDto, userId: number) {
-    const { tourId, passengerName, phoneNumber, seatsBooked } = dto;
+  async create(dto: CreateBookingDto, userId: number, phoneNumber: string) {
+    const { tourId, passengerName, seatsBooked } = dto;
 
     let booking: Booking;
     try {

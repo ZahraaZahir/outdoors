@@ -15,7 +15,7 @@ export class BookingsController {
     @Body() dto: CreateBookingDto,
     @CurrentUser() user: UserPayload,
   ) {
-    return this.bookingsService.create(dto, user.id);
+    return this.bookingsService.create(dto, user.id, user.phoneNumber);
   }
 
   @Get()

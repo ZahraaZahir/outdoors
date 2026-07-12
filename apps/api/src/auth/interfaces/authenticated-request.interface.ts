@@ -4,6 +4,7 @@ export interface UserPayload {
   id: number;
   email: string;
   role: Role;
+  phoneNumber: string;
 }
 
 export interface AuthenticatedRequest {
