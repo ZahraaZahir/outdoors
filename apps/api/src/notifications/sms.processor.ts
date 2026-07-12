@@ -5,6 +5,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BookingStatus } from '../generated/prisma/enums.js';
 import { SmsPayload, SmsProvider } from './sms-provider.interface.js';
 
+export const SMS_MAX_ATTEMPTS = 3;
+
 interface SmsJobData {
   bookingId: number;
   passengerName: string;
@@ -53,6 +55,18 @@ export class SmsProcessor extends WorkerHost {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`SMS send failed for booking ${bookingId}: ${message}`);
+
+      if (job.attemptsMade >= SMS_MAX_ATTEMPTS) {
+        this.logger.error(
+          `Booking ${bookingId} exhausted all ${SMS_MAX_ATTEMPTS} attempts, marking as FAILED.`,
+        );
+        await this.prisma.booking.update({
+          where: { id: bookingId },
+          data: { status: BookingStatus.FAILED },
+        });
+        return;
+      }
+
       throw error;
     }
 

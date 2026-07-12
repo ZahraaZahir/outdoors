@@ -13,6 +13,7 @@ import type { Booking } from '../generated/prisma/client.js';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { MAX_SEATS_PER_USER_PER_TOUR } from './bookings.constants.js';
+import { SMS_MAX_ATTEMPTS } from '../notifications/sms.processor.js';
 import { TOURS_CACHE_KEY } from '../tours/tours.constants.js';
 
 @Injectable()
@@ -97,6 +98,7 @@ export class BookingsService {
         phoneNumber: booking.phoneNumber,
       },
       {
+        attempts: SMS_MAX_ATTEMPTS,
         removeOnComplete: { count: 1000 },
         removeOnFail: { count: 5000 },
       },
