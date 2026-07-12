@@ -34,13 +34,27 @@ export class BookingsService {
       booking = await this.prisma.$transaction(async (tx) => {
         const existingBookings = await tx.booking.aggregate({
           where: {
-            OR: [{ userId }, { phoneNumber }],
+            userId,
             status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
           },
           _sum: {
             seatsBooked: true,
           },
         });
+
+        const alreadyBookedOnTour = await tx.booking.findFirst({
+          where: {
+            userId,
+            tourId,
+            status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+          },
+        });
+
+        if (alreadyBookedOnTour) {
+          throw new BadRequestException(
+            'You have already booked this tour. Modify your existing booking instead.',
+          );
+        }
 
         const currentlyBooked = existingBookings._sum.seatsBooked || 0;
 
