@@ -1,5 +1,4 @@
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
@@ -10,10 +9,6 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Name is required' })
   @IsString()
   name!: string;
-
-  @IsNotEmpty({ message: 'Email is required' })
-  @IsEmail({}, { message: 'Please provide a valid email address' })
-  email!: string;
 
   @IsNotEmpty({ message: 'Password is required' })
   @IsString()
@@ -27,8 +22,4 @@ export class RegisterDto {
       'Phone number must be a valid Iraqi mobile format (Zain, Asiacell, or Korek)',
   })
   phoneNumber!: string;
-
-  // Explicitly reject any role field sent in the request body.
-  // Admin role must be assigned via database or a separate admin action.
-  role?: never;
 }

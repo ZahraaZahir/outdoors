@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, Length } from 'class-validator';
 
-export class LoginDto {
+export class VerifyPhoneDto {
   @IsNotEmpty({ message: 'Phone number is required' })
   @IsString()
   @Matches(/^(?:\+964|0)?7[5789]\d{8}$/, {
@@ -9,7 +9,8 @@ export class LoginDto {
   })
   phoneNumber!: string;
 
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsNotEmpty({ message: 'Verification code is required' })
   @IsString()
-  password!: string;
+  @Length(6, 6, { message: 'Code must be 6 digits' })
+  code!: string;
 }

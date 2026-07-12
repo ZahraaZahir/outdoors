@@ -2,6 +2,7 @@ import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dtos/register.dto.js';
 import { LoginDto } from './dtos/login.dto.js';
+import { VerifyPhoneDto } from './dtos/verify-phone.dto.js';
 import {
   RateLimit,
   RateLimitGuard,
@@ -23,6 +24,16 @@ export class AuthController {
   @Post('login')
   async login(@Body() credentials: LoginDto) {
     return this.authService.login(credentials);
+  }
+
+  @Post('verify')
+  async verifyPhone(@Body() dto: VerifyPhoneDto) {
+    return this.authService.verifyPhone(dto);
+  }
+
+  @Post('resend-otp')
+  async resendOtp(@Body('phoneNumber') phoneNumber: string) {
+    return this.authService.resendOtp(phoneNumber);
   }
 
   @Post('refresh')

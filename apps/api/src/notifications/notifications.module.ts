@@ -13,6 +13,6 @@ const smsQueueRegistration = BullModule.registerQueue({ name: 'sms_queue' });
     SmsProcessor,
     { provide: SmsProvider, useClass: ConsoleSmsProvider },
   ],
-  exports: [smsQueueRegistration],
+  exports: [smsQueueRegistration, SmsProvider],
 })
 export class NotificationsModule {}

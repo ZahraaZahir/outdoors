@@ -6,6 +6,7 @@ import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
+import { OtpModule } from '../otp/otp.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PrismaModule } from '../prisma/prisma.module.js';
         signOptions: { expiresIn: '15m', algorithm: 'HS256' },
       }),
     }),
+    OtpModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

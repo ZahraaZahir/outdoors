@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -9,6 +10,8 @@ import { genSalt, hash, compare } from 'bcrypt-ts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dtos/register.dto.js';
 import { LoginDto } from './dtos/login.dto.js';
+import { VerifyPhoneDto } from './dtos/verify-phone.dto.js';
+import { OtpService } from '../otp/otp.service.js';
 
 @Injectable()
 export class AuthService {
@@ -17,10 +20,11 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly otpService: OtpService,
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { name, email, password, phoneNumber } = registerDto;
+    const { name, password, phoneNumber } = registerDto;
 
     const salt = await genSalt(10);
     const hashedPassword = await hash(password, salt);
@@ -29,7 +33,6 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           name,
-          email,
           password: hashedPassword,
           phoneNumber,
           role: 'TRAVELER',
@@ -37,12 +40,14 @@ export class AuthService {
         select: {
           id: true,
           name: true,
-          email: true,
           phoneNumber: true,
           role: true,
+          verified: true,
           createdAt: true,
         },
       });
+
+      await this.otpService.generate(phoneNumber);
 
       return user;
     } catch (error: unknown) {
@@ -51,19 +56,50 @@ export class AuthService {
         meta?: { target?: string[] };
         message?: string;
       };
-      if (err.code === 'P2002' && err.meta?.target?.includes('email')) {
-        throw new ConflictException('Email is already in use');
+      if (err.code === 'P2002' && err.meta?.target?.includes('phoneNumber')) {
+        throw new ConflictException('Phone number is already registered');
       }
       this.logger.error(`Registration failed: ${err.message}`);
       throw error;
     }
   }
 
+  async verifyPhone(dto: VerifyPhoneDto) {
+    const { phoneNumber, code } = dto;
+
+    const valid = await this.otpService.verify(phoneNumber, code);
+    if (!valid) {
+      throw new BadRequestException('Invalid or expired verification code.');
+    }
+
+    await this.prisma.user.update({
+      where: { phoneNumber },
+      data: { verified: true },
+    });
+
+    return { message: 'Phone number verified successfully.' };
+  }
+
+  async resendOtp(phoneNumber: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { phoneNumber },
+    });
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+    if (user.verified) {
+      throw new BadRequestException('Phone number is already verified.');
+    }
+
+    await this.otpService.generate(phoneNumber);
+    return { message: 'Verification code sent.' };
+  }
+
   async login(credentials: LoginDto) {
-    const { email, password } = credentials;
+    const { phoneNumber, password } = credentials;
 
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { phoneNumber },
     });
 
     if (!user || !(await compare(password, user.password))) {
@@ -72,9 +108,8 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      email: user.email,
-      role: user.role,
       phoneNumber: user.phoneNumber,
+      role: user.role,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -92,9 +127,8 @@ export class AuthService {
     try {
       const payload = await this.jwtService.verifyAsync<{
         sub: number;
-        email: string;
-        role: string;
         phoneNumber: string;
+        role: string;
         type: string;
       }>(refreshToken);
 
@@ -112,9 +146,8 @@ export class AuthService {
 
       const newPayload = {
         sub: user.id,
-        email: user.email,
-        role: user.role,
         phoneNumber: user.phoneNumber,
+        role: user.role,
       };
 
       const newAccessToken = await this.jwtService.signAsync(newPayload);

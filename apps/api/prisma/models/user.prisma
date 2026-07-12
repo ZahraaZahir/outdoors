@@ -5,11 +5,11 @@ enum Role {
 
 model User {
   id          Int       @id @default(autoincrement())
-  email       String    @unique
+  phoneNumber String    @unique
   password    String
   name        String
   role        Role      @default(TRAVELER)
-  phoneNumber String
+  verified    Boolean   @default(false)
   bookings    Booking[]
   createdAt   DateTime  @default(now())
 }

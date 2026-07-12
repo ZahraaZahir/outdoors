@@ -1,12 +1,11 @@
-import { Role } from '../../generated/prisma/enums.js';
+import type { Request } from 'express';
 
 export interface UserPayload {
   id: number;
-  email: string;
-  role: Role;
   phoneNumber: string;
+  role: string;
 }
 
-export interface AuthenticatedRequest {
-  user?: UserPayload;
+export interface AuthenticatedRequest extends Request {
+  user: UserPayload;
 }
