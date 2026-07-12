@@ -27,4 +27,8 @@ export class RegisterDto {
       'Phone number must be a valid Iraqi mobile format (Zain, Asiacell, or Korek)',
   })
   phoneNumber!: string;
+
+  // Explicitly reject any role field sent in the request body.
+  // Admin role must be assigned via database or a separate admin action.
+  role?: never;
 }
