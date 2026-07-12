@@ -1,17 +1,21 @@
 import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { UserPayload } from '../auth/interfaces/authenticated-request.interface.js';
+import {
+  RateLimit,
+  RateLimitGuard,
+} from '../common/guards/rate-limit.guard.js';
 
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @RateLimit(60_000, 5)
+  @UseGuards(RateLimitGuard)
   @Post()
   async create(
     @Body() dto: CreateBookingDto,
