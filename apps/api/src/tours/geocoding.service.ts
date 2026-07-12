@@ -44,7 +44,7 @@ export class GeocodingService {
     this.logger.log(`Geocoded "${destination}" -> ${match.display_name}`);
 
     return {
-      displayName: match.display_name,
+      displayName: match.display_name.slice(0, 200),
       latitude: parseFloat(match.lat),
       longitude: parseFloat(match.lon),
     };

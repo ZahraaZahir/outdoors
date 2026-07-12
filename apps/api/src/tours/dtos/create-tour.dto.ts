@@ -18,6 +18,7 @@ export class CreateTourDto {
 
   @IsNotEmpty()
   @IsString()
+  @Length(2, 100, { message: 'Destination must be between 2 and 100 characters.' })
   destination!: string;
 
   @IsNotEmpty()
