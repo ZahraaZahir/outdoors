@@ -180,11 +180,15 @@ export default function TourList() {
                   onMouseEnter={() => api.prefetchTour(tour.id)}
                 >
                   <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg className="h-20 w-20 text-white/20 transition-transform duration-500 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
-                      </svg>
-                    </div>
+                    {tour.imageUrl ? (
+                      <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg className="h-20 w-20 text-white/20 transition-transform duration-500 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
+                        </svg>
+                      </div>
+                    )}
                     <div className="absolute left-4 top-4 flex gap-2">
                       <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-primary-700 backdrop-blur-sm">
                         {getDurationLabel(tour)}

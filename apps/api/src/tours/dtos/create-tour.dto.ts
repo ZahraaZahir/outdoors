@@ -21,6 +21,10 @@ export class CreateTourDto {
   @Length(0, 2000, { message: 'Description must not exceed 2000 characters.' })
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @IsNotEmpty()
   @IsString()
   @Length(2, 100, {

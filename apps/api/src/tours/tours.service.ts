@@ -40,6 +40,7 @@ export class ToursService {
         longitude: geo.longitude,
         date: tourDate,
         priceIQD: dto.priceIQD,
+        imageUrl: dto.imageUrl ?? null,
         maxSeats: maxSeats,
         availableSeats: maxSeats,
       },

@@ -1,24 +1,55 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 
 export default function CreateTour() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ title: "", description: "", destination: "", date: "", priceIQD: 0, maxSeats: 30 });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setUploading(true);
     try {
-      await api.createTour(form);
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/uploads/image", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.message || "Failed to upload image");
+        }
+        const data = await res.json();
+        imageUrl = data.url;
+      }
+      await api.createTour({ ...form, imageUrl });
       navigate("/");
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
-  const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.type === "number" ? Number(e.target.value) : e.target.value }));
 
   return (
@@ -59,9 +90,41 @@ export default function CreateTour() {
                 placeholder="Describe the tour experience..."
                 rows={4}
                 value={form.description}
-                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                onChange={update("description")}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
               />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-dark">Cover image</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Preview" className="h-40 w-full rounded-xl object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => { setImageFile(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                    className="absolute right-2 top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full rounded-xl border-2 border-dashed border-gray-200 px-4 py-8 text-sm text-muted transition-colors hover:border-primary-400 hover:text-primary-600"
+                >
+                  Click to upload an image
+                </button>
+              )}
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-dark">Date & time</label>
@@ -97,8 +160,8 @@ export default function CreateTour() {
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
-            <button type="submit" className="mt-2 w-full rounded-full bg-primary-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
-              Create Tour
+            <button type="submit" disabled={uploading} className="mt-2 w-full rounded-full bg-primary-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:opacity-50">
+              {uploading ? "Uploading..." : "Create Tour"}
             </button>
           </form>
         </div>

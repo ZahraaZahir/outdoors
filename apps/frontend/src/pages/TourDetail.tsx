@@ -104,13 +104,19 @@ export default function TourDetail() {
       <div className="mx-auto max-w-6xl px-4 py-10 lg:px-6">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200/60">
-              <div className="flex h-full items-center justify-center">
-                <svg className="h-24 w-24 text-primary-400/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
-                </svg>
+            {tour.imageUrl ? (
+              <div className="aspect-[16/9] overflow-hidden rounded-2xl">
+                <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover" />
               </div>
-            </div>
+            ) : (
+              <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200/60">
+                <div className="flex h-full items-center justify-center">
+                  <svg className="h-24 w-24 text-primary-400/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
+                  </svg>
+                </div>
+              </div>
+            )}
 
             <div className="mt-8">
               <h2 className="font-heading text-xl font-semibold text-dark">About this tour</h2>
