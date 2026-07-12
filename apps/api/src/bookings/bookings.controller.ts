@@ -3,7 +3,7 @@ import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import { UserPayload } from '../auth/interfaces/authenticated-request.interface.js';
+import type { UserPayload } from '../auth/interfaces/authenticated-request.interface.js';
 
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)
