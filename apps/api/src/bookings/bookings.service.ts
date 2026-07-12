@@ -12,7 +12,7 @@ import { BookingStatus } from '../generated/prisma/enums.js';
 import type { Booking } from '../generated/prisma/client.js';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { MAX_SEATS_PER_USER_PER_TOUR } from './bookings.constants.js';
+import { MAX_SEATS_PER_USER_TOTAL } from './bookings.constants.js';
 import { SMS_MAX_ATTEMPTS } from '../notifications/sms.processor.js';
 import { TOURS_CACHE_KEY } from '../tours/tours.constants.js';
 
@@ -34,7 +34,6 @@ export class BookingsService {
       booking = await this.prisma.$transaction(async (tx) => {
         const existingBookings = await tx.booking.aggregate({
           where: {
-            tourId,
             OR: [{ userId }, { phoneNumber }],
             status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
           },
@@ -45,9 +44,9 @@ export class BookingsService {
 
         const currentlyBooked = existingBookings._sum.seatsBooked || 0;
 
-        if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_PER_TOUR) {
+        if (currentlyBooked + seatsBooked > MAX_SEATS_PER_USER_TOTAL) {
           throw new BadRequestException(
-            `Booking rejected. Seat limit per user/phone on this tour is ${MAX_SEATS_PER_USER_PER_TOUR}. You currently have ${currentlyBooked} seats booked.`,
+            `Booking rejected. Total seat limit across all tours is ${MAX_SEATS_PER_USER_TOTAL}. You currently have ${currentlyBooked} seats booked.`,
           );
         }
 

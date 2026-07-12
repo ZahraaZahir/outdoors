@@ -6,7 +6,7 @@ import {
   Max,
   Matches,
 } from 'class-validator';
-import { MAX_SEATS_PER_USER_PER_TOUR } from '../bookings.constants.js';
+import { MAX_SEATS_PER_USER_TOTAL } from '../bookings.constants.js';
 
 export class CreateBookingDto {
   @IsNotEmpty()
@@ -28,8 +28,8 @@ export class CreateBookingDto {
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  @Max(MAX_SEATS_PER_USER_PER_TOUR, {
-    message: `You cannot book more than ${MAX_SEATS_PER_USER_PER_TOUR} seats.`,
+  @Max(MAX_SEATS_PER_USER_TOTAL, {
+    message: `You cannot book more than ${MAX_SEATS_PER_USER_TOTAL} seats total across all tours.`,
   })
   seatsBooked!: number;
 }
