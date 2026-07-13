@@ -31,7 +31,9 @@ export class OtpService {
       message: `Your verification code is: ${code}. It expires in 5 minutes.`,
     });
 
-    this.logger.log(`OTP sent to ${phoneNumber}: ${code}`);
+    if (process.env.NODE_ENV !== 'production') {
+      this.logger.log(`OTP sent to ${phoneNumber}: ${code}`);
+    }
 
     return code;
   }
