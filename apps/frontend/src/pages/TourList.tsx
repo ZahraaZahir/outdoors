@@ -61,10 +61,15 @@ export default function TourList() {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 pt-28 pb-20">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-300 blur-3xl" />
-          <div className="absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-primary-400 blur-3xl" />
+      <section className="relative overflow-hidden bg-primary-950 pt-28 pb-20">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1600&h=900&fit=crop"
+            alt=""
+            className="h-full w-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-950/90 via-primary-900/75 to-primary-950/60" />
         </div>
         <div className="relative mx-auto max-w-6xl px-4 lg:px-6">
           <div className="max-w-2xl">

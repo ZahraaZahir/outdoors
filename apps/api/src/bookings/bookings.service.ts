@@ -169,7 +169,7 @@ export class BookingsService {
       where: { userId },
       include: {
         tour: {
-          select: { id: true, title: true, destination: true, date: true, priceIQD: true },
+          select: { id: true, title: true, destination: true, date: true, priceIQD: true, imageUrl: true },
         },
       },
       orderBy: { createdAt: 'desc' },
