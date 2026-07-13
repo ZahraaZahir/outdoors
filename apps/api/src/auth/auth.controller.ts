@@ -26,16 +26,22 @@ export class AuthController {
     return this.authService.login(credentials);
   }
 
+  @RateLimit(60_000, 10)
+  @UseGuards(RateLimitGuard)
   @Post('verify')
   async verifyPhone(@Body() dto: VerifyPhoneDto) {
     return this.authService.verifyPhone(dto);
   }
 
+  @RateLimit(60_000, 3)
+  @UseGuards(RateLimitGuard)
   @Post('resend-otp')
   async resendOtp(@Body('phoneNumber') phoneNumber: string) {
     return this.authService.resendOtp(phoneNumber);
   }
 
+  @RateLimit(60_000, 10)
+  @UseGuards(RateLimitGuard)
   @Post('refresh')
   async refresh(@Body('refreshToken') refreshToken: string) {
     return this.authService.refresh(refreshToken);
