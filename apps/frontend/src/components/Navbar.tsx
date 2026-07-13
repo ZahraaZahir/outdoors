@@ -1,24 +1,17 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const AVATAR_COLORS = [
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-sky-500",
-  "bg-violet-500",
-  "bg-pink-500",
-  "bg-indigo-500",
-  "bg-teal-500",
-  "bg-orange-500",
-];
-
 function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const first = name.charAt(0).toUpperCase();
+  if (first <= "C") return "bg-rose-500";
+  if (first <= "F") return "bg-amber-500";
+  if (first <= "I") return "bg-sky-500";
+  if (first <= "L") return "bg-violet-500";
+  if (first <= "O") return "bg-pink-500";
+  if (first <= "R") return "bg-indigo-500";
+  if (first <= "U") return "bg-teal-500";
+  return "bg-orange-500";
 }
 
 export default function Navbar() {
@@ -27,10 +20,10 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = (e: React.PointerEvent) => {
-    e.stopPropagation();
+  const handleLogout = () => {
     setProfileOpen(false);
     setMobileOpen(false);
     logout();
@@ -39,17 +32,16 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const avatarColor = useMemo(
-    () => (user?.name ? getAvatarColor(user.name) : "bg-dark"),
-    [user?.name]
-  );
-
+  const avatarColor = user?.name ? getAvatarColor(user.name) : "bg-dark";
   const initial = user?.name?.charAt(0).toUpperCase() ?? "?";
 
   useEffect(() => {
     if (!profileOpen) return;
     const handleDown = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const insideDesktop = desktopRef.current?.contains(target);
+      const insideMobile = mobileRef.current?.contains(target);
+      if (!insideDesktop && !insideMobile) {
         setProfileOpen(false);
       }
     };
@@ -75,10 +67,7 @@ export default function Navbar() {
   };
 
   const profileDropdown = (
-    <div
-      className="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-primary-100 bg-white py-1 shadow-lg"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-primary-100 bg-white py-1 shadow-lg">
       <div className="border-b border-primary-50 px-4 py-3">
         <div className="flex items-center gap-3">
           <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor}`}>
@@ -96,7 +85,7 @@ export default function Navbar() {
         </div>
       </div>
       <button
-        onPointerDown={handleLogout}
+        onMouseDown={(e) => { e.stopPropagation(); handleLogout(); }}
         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-red-50 hover:text-red-600"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -149,7 +138,7 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-4 md:flex">
           {user ? (
-            <div ref={profileRef} className="relative">
+            <div ref={desktopRef} className="relative">
               <button
                 onClick={toggleProfile}
                 className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-primary-50"
@@ -180,7 +169,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3 md:hidden">
           {user && (
-            <div ref={profileRef} className="relative">
+            <div ref={mobileRef} className="relative">
               <button
                 onClick={toggleProfile}
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor}`}
