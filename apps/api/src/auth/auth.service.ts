@@ -106,6 +106,7 @@ export class AuthService {
       sub: user.id,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      name: user.name,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -144,6 +145,7 @@ export class AuthService {
         sub: user.id,
         phoneNumber: user.phoneNumber,
         role: user.role,
+        name: user.name,
       };
 
       const newAccessToken = await this.jwtService.signAsync(newPayload);
