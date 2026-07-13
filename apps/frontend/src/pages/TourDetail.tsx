@@ -51,7 +51,7 @@ export default function TourDetail() {
     setSuccess("");
     try {
       await api.createBooking({ tourId: Number(id), ...form });
-      setSuccess("Booking created! Check your SMS for confirmation.");
+      setSuccess("Booking created! Confirmation would be sent via SMS in production.");
       setTimeout(() => navigate("/my-bookings"), 2000);
     } catch (err: any) {
       setError(err.message);
