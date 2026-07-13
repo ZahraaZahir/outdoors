@@ -42,21 +42,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen bg-light">
+        <div className="flex min-h-screen flex-col bg-light">
           <Navbar />
-          <Suspense fallback={<PageSkeleton />}>
-            <Routes>
-              <Route path="/" element={<TourList />} />
-              <Route path="/tours/:id" element={<TourDetail />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify-phone" element={<VerifyPhone />} />
-              <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
-              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              <Route path="/admin/tours/new" element={<AdminRoute><CreateTour /></AdminRoute>} />
-              <Route path="/admin/tours/:id/edit" element={<AdminRoute><EditTour /></AdminRoute>} />
-            </Routes>
-          </Suspense>
+          <div className="flex-1">
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
+                <Route path="/" element={<TourList />} />
+                <Route path="/tours/:id" element={<TourDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/verify-phone" element={<VerifyPhone />} />
+                <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/tours/new" element={<AdminRoute><CreateTour /></AdminRoute>} />
+                <Route path="/admin/tours/:id/edit" element={<AdminRoute><EditTour /></AdminRoute>} />
+              </Routes>
+            </Suspense>
+          </div>
           <Footer />
         </div>
       </AuthProvider>
