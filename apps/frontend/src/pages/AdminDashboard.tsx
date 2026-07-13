@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Tour, Booking } from "../lib/types";
+import ConfirmModal from "../components/ConfirmModal";
 
 function StatSkeleton() {
   return (
@@ -17,6 +18,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Tour | null>(null);
 
   useEffect(() => {
     Promise.all([api.getTours(), api.getBookings()])
@@ -24,16 +26,18 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this tour? This cannot be undone.")) return;
-    setDeletingId(id);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.deleteTour(id);
-      setTours((prev) => prev.filter((t) => t.id !== id));
-    } catch (err: any) {
-      alert(err.message);
+      await api.deleteTour(deleteTarget.id);
+      setTours((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Delete failed";
+      alert(message);
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -142,7 +146,7 @@ export default function AdminDashboard() {
                           Edit
                         </Link>
                         <button
-                          onClick={() => handleDelete(tour.id)}
+                          onClick={() => setDeleteTarget(tour)}
                           disabled={deletingId === tour.id}
                           className="rounded-lg bg-red-50 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
                         >
@@ -157,6 +161,15 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete tour"
+        message={`Delete "${deleteTarget?.title}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Keep"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
