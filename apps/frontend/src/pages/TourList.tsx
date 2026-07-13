@@ -26,6 +26,7 @@ function getDurationLabel(tour: Tour): string {
   const diffMs = tourDate.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
+  if (diffDays < 0) return "Past";
   if (diffDays <= 1) return "Tomorrow";
   if (diffDays <= 7) return `${diffDays} days`;
   if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks`;
