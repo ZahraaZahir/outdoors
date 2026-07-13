@@ -1,49 +1,124 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
+    setProfileOpen(false);
+    setMobileOpen(false);
     navigate("/login");
-    setOpen(false);
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setProfileOpen(false);
+  }, [location.pathname]);
+
+  const initial = user?.name?.charAt(0).toUpperCase() ?? "?";
+
   return (
-    <nav className="fixed top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-primary-100">
+    <nav className="fixed top-0 z-50 w-full border-b border-primary-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 lg:px-6">
         <Link to="/" className="font-heading text-xl font-bold text-primary-700">
           Outdoors
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <Link to="/" className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
+        <div className="hidden items-center gap-6 md:flex">
+          <Link
+            to="/"
+            className={`text-sm font-medium transition-colors ${isActive("/") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}
+          >
             Tours
           </Link>
-          {user ? (
+          {user && (
+            <Link
+              to="/my-bookings"
+              className={`text-sm font-medium transition-colors ${isActive("/my-bookings") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}
+            >
+              My Bookings
+            </Link>
+          )}
+          {user?.role === "ADMIN" && (
             <>
-              <Link to="/my-bookings" className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                My Bookings
+              <Link
+                to="/admin"
+                className={`text-sm font-medium transition-colors ${isActive("/admin") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}
+              >
+                Dashboard
               </Link>
-              {user.role === "ADMIN" && (
-                <>
-                  <Link to="/admin" className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                    Dashboard
-                  </Link>
-                  <Link to="/admin/tours/new" className="rounded-full bg-primary-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-700">
-                    New Tour
-                  </Link>
-                </>
-              )}
-              <span className="text-xs text-muted">{user.phoneNumber}</span>
-              <button onClick={handleLogout} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                Logout
-              </button>
+              <Link
+                to="/admin/tours/new"
+                className="rounded-full bg-primary-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                New Tour
+              </Link>
             </>
+          )}
+        </div>
+
+        <div className="hidden items-center gap-4 md:flex">
+          {user ? (
+            <div ref={profileRef} className="relative">
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-primary-50"
+                aria-expanded={profileOpen}
+                aria-haspopup="true"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-sm font-semibold text-white">
+                  {initial}
+                </span>
+                <span className="text-sm font-medium text-dark">{user.name}</span>
+                <svg className={`h-4 w-4 text-muted transition-transform ${profileOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg">
+                  <div className="border-b border-primary-50 px-4 py-3">
+                    <p className="text-sm font-semibold text-dark">{user.name}</p>
+                    <p className="mt-0.5 text-xs text-muted">{user.phoneNumber}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-primary-50"
+                  >
+                    <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/login" className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
@@ -56,50 +131,76 @@ export default function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="grid gap-y-1.5 md:hidden"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${open ? "translate-y-2 rotate-45" : ""}`} />
-          <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${open ? "opacity-0" : ""}`} />
-          <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${open ? "-translate-y-2 -rotate-45" : ""}`} />
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          {user && (
+            <div ref={profileRef} className="relative">
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-sm font-semibold text-white"
+                aria-expanded={profileOpen}
+                aria-haspopup="true"
+              >
+                {initial}
+              </button>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg">
+                  <div className="border-b border-primary-50 px-4 py-3">
+                    <p className="text-sm font-semibold text-dark">{user.name}</p>
+                    <p className="mt-0.5 text-xs text-muted">{user.phoneNumber}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-primary-50"
+                  >
+                    <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            type="button"
+            className="grid gap-y-1.5"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
+            <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+          </button>
+        </div>
       </div>
 
-      {open && (
+      {mobileOpen && (
         <div className="border-t border-primary-100 bg-white px-4 pb-6 pt-4 md:hidden">
           <div className="flex flex-col gap-4">
-            <Link to="/" onClick={() => setOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
+            <Link to="/" onClick={() => setMobileOpen(false)} className={`text-sm font-medium transition-colors ${isActive("/") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}>
               Tours
             </Link>
-            {user ? (
+            {user && (
+              <Link to="/my-bookings" onClick={() => setMobileOpen(false)} className={`text-sm font-medium transition-colors ${isActive("/my-bookings") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}>
+                My Bookings
+              </Link>
+            )}
+            {user?.role === "ADMIN" && (
               <>
-                <Link to="/my-bookings" onClick={() => setOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                  My Bookings
+                <Link to="/admin" onClick={() => setMobileOpen(false)} className={`text-sm font-medium transition-colors ${isActive("/admin") ? "text-primary-600" : "text-dark opacity-70 hover:opacity-100"}`}>
+                  Dashboard
                 </Link>
-                {user.role === "ADMIN" && (
-                  <>
-                    <Link to="/admin" onClick={() => setOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                      Dashboard
-                    </Link>
-                    <Link to="/admin/tours/new" onClick={() => setOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                      New Tour
-                    </Link>
-                  </>
-                )}
-                <span className="text-xs text-muted">{user.phoneNumber}</span>
-                <button onClick={handleLogout} className="text-left text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
-                  Logout
-                </button>
+                <Link to="/admin/tours/new" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
+                  New Tour
+                </Link>
               </>
-            ) : (
+            )}
+            {!user && (
               <>
-                <Link to="/login" onClick={() => setOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-dark opacity-70 transition-opacity hover:opacity-100">
                   Login
                 </Link>
-                <Link to="/register" onClick={() => setOpen(false)} className="rounded-full bg-primary-600 px-4 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary-700">
+                <Link to="/register" onClick={() => setMobileOpen(false)} className="rounded-full bg-primary-600 px-4 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary-700">
                   Register
                 </Link>
               </>
