@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { Booking } from "../lib/types";
+import ConfirmModal from "../components/ConfirmModal";
 
 const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: "bg-yellow-50", text: "text-yellow-700" },
@@ -38,13 +39,14 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("active");
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
     api.getBookings().then(setBookings).finally(() => setLoading(false));
   }, []);
 
   const handleCancel = async (id: number) => {
-    if (!confirm("Cancel this booking? Your seats will be released.")) return;
+    setConfirmId(null);
     setCancellingId(id);
     try {
       await api.cancelBooking(id);
@@ -172,7 +174,7 @@ export default function MyBookings() {
                       </p>
                       {canCancel(b) && (
                         <button
-                          onClick={() => handleCancel(b.id)}
+                          onClick={() => setConfirmId(b.id)}
                           disabled={cancellingId === b.id}
                           className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
                         >
@@ -187,6 +189,17 @@ export default function MyBookings() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        open={confirmId !== null}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? Your seats will be released and this action cannot be undone."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="Keep Booking"
+        danger
+        onConfirm={() => confirmId && handleCancel(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }
