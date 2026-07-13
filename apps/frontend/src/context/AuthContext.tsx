@@ -20,7 +20,7 @@ function parseJwt(token: string): User | null {
       id: payload.sub,
       phoneNumber: payload.phoneNumber,
       role: payload.role,
-      name: "",
+      name: payload.name ?? "",
       verified: false,
       createdAt: "",
     };
