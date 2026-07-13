@@ -30,8 +30,8 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:root_password@postgres:5432/outdoor_db?schema=public
       REDIS_URL: redis://redis:6379
-      RABBITMQ_URL: amqp://localhost:5672
       JWT_SECRET: ae89d3b9b72bc3047dce4a4fa417025681aa96ced9e6608d9588c7c50f672103
+      CORS_ORIGIN: http://localhost:5173
     depends_on:
       - postgres
       - redis
