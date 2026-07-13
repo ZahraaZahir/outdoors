@@ -2,16 +2,23 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const AVATAR_COLORS = [
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-pink-500",
+  "bg-indigo-500",
+  "bg-teal-500",
+  "bg-orange-500",
+];
+
 function getAvatarColor(name: string): string {
-  const first = name.charAt(0).toUpperCase();
-  if (first <= "C") return "bg-rose-500";
-  if (first <= "F") return "bg-amber-500";
-  if (first <= "I") return "bg-sky-500";
-  if (first <= "L") return "bg-violet-500";
-  if (first <= "O") return "bg-pink-500";
-  if (first <= "R") return "bg-indigo-500";
-  if (first <= "U") return "bg-teal-500";
-  return "bg-orange-500";
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 export default function Navbar() {
