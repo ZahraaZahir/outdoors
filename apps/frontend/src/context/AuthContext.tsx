@@ -58,8 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const expiresAt = payload.exp * 1000;
+    let payload: { exp?: number };
+    try {
+      payload = JSON.parse(atob(token.split(".")[1]));
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      setToken(null);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+    const expiresAt = (payload.exp ?? 0) * 1000;
     const now = Date.now();
     const timeUntilExpiry = expiresAt - now;
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { setPendingPassword } from "../lib/pendingAuth";
 
 export default function Register() {
   const { register } = useAuth();
@@ -13,8 +14,9 @@ export default function Register() {
     setError("");
     try {
       const { otpCode } = await register(form);
+      setPendingPassword(form.password);
       navigate(`/verify-phone?phone=${encodeURIComponent(form.phoneNumber)}`, {
-        state: { otpCode, password: form.password },
+        state: { otpCode },
       });
     } catch (err: any) {
       setError(err.message);

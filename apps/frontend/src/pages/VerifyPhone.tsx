@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { consumePendingPassword } from "../lib/pendingAuth";
 
 export default function VerifyPhone() {
   const navigate = useNavigate();
@@ -11,9 +12,9 @@ export default function VerifyPhone() {
   const phoneNumber = searchParams.get("phone") || "";
 
   const [otpCode, setOtpCode] = useState<string>(
-    (location.state as { otpCode?: string; password?: string } | null)?.otpCode ?? ""
+    (location.state as { otpCode?: string } | null)?.otpCode ?? ""
   );
-  const password = (location.state as { password?: string } | null)?.password ?? "";
+  const [password] = useState(() => consumePendingPassword());
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
