@@ -49,11 +49,7 @@ export class AuthService {
 
       const otpCode = await this.otpService.generate(phoneNumber);
 
-      const response: Record<string, unknown> = { ...user };
-      if (process.env.NODE_ENV === 'development') {
-        response.otpCode = otpCode;
-      }
-      return response;
+      return { ...user, otpCode };
     } catch (error: unknown) {
       const err = error as {
         code?: string;
@@ -96,13 +92,7 @@ export class AuthService {
     }
 
     const otpCode = await this.otpService.generate(phoneNumber);
-    const response: Record<string, unknown> = {
-      message: 'Verification code sent.',
-    };
-    if (process.env.NODE_ENV === 'development') {
-      response.otpCode = otpCode;
-    }
-    return response;
+    return { message: 'Verification code sent.', otpCode };
   }
 
   async login(credentials: LoginDto) {

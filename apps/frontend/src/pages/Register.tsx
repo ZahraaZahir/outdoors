@@ -12,8 +12,10 @@ export default function Register() {
     e.preventDefault();
     setError("");
     try {
-      await register(form);
-      navigate(`/verify-phone?phone=${encodeURIComponent(form.phoneNumber)}`);
+      const { otpCode } = await register(form);
+      navigate(`/verify-phone?phone=${encodeURIComponent(form.phoneNumber)}`, {
+        state: { otpCode },
+      });
     } catch (err: any) {
       setError(err.message);
     }

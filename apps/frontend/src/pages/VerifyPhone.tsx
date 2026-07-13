@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 
 export default function VerifyPhone() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const phoneNumber = searchParams.get("phone") || "";
 
+  const [otpCode, setOtpCode] = useState<string>(
+    (location.state as { otpCode?: string } | null)?.otpCode ?? ""
+  );
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -75,7 +79,8 @@ export default function VerifyPhone() {
     setResending(true);
     setError("");
     try {
-      await api.resendOtp(phoneNumber);
+      const res = await api.resendOtp(phoneNumber);
+      setOtpCode(res.otpCode);
       setCooldown(60);
     } catch (err: any) {
       setError(err.message);
@@ -110,6 +115,19 @@ export default function VerifyPhone() {
               <span className="font-medium text-dark">{phoneNumber}</span>
             </p>
           </div>
+
+          {otpCode && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <p className="font-medium">Demo mode</p>
+              <p className="mt-1">
+                Your verification code is{" "}
+                <span className="font-mono text-base font-bold text-amber-900">{otpCode}</span>
+              </p>
+              <p className="mt-1 text-xs text-amber-600">
+                In production, this would be sent via SMS.
+              </p>
+            </div>
+          )}
 
           {success ? (
             <div className="rounded-xl bg-green-50 px-4 py-3 text-center text-sm text-green-700">

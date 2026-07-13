@@ -104,7 +104,7 @@ function invalidate(pattern?: string) {
 
 export const api = {
   register: (data: { name: string; password: string; phoneNumber: string }) =>
-    request<{ id: number; name: string; phoneNumber: string; role: string; verified: boolean }>("/auth/register", {
+    request<{ id: number; name: string; phoneNumber: string; role: string; verified: boolean; otpCode: string }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -116,7 +116,7 @@ export const api = {
     }),
 
   resendOtp: (phoneNumber: string) =>
-    request<{ message: string }>("/auth/resend-otp", {
+    request<{ message: string; otpCode: string }>("/auth/resend-otp", {
       method: "POST",
       body: JSON.stringify({ phoneNumber }),
     }),

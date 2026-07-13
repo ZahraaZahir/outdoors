@@ -6,7 +6,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   login: (phoneNumber: string, password: string) => Promise<void>;
-  register: (data: { name: string; password: string; phoneNumber: string }) => Promise<void>;
+  register: (data: { name: string; password: string; phoneNumber: string }) => Promise<{ otpCode: string }>;
   logout: () => void;
   loading: boolean;
 }
@@ -87,7 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: { name: string; password: string; phoneNumber: string }) => {
-    await api.register(data);
+    const res = await api.register(data);
+    return { otpCode: res.otpCode };
   };
 
   const logout = () => {
