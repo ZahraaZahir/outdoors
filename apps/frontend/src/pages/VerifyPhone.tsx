@@ -1,16 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function VerifyPhone() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const phoneNumber = searchParams.get("phone") || "";
 
   const [otpCode, setOtpCode] = useState<string>(
-    (location.state as { otpCode?: string } | null)?.otpCode ?? ""
+    (location.state as { otpCode?: string; password?: string } | null)?.otpCode ?? ""
   );
+  const password = (location.state as { password?: string } | null)?.password ?? "";
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -67,7 +70,12 @@ export default function VerifyPhone() {
     try {
       await api.verifyPhone({ phoneNumber, code: fullCode });
       setSuccess(true);
-      setTimeout(() => navigate("/login"), 2000);
+      if (password) {
+        await login(phoneNumber, password);
+        setTimeout(() => navigate("/"), 1500);
+      } else {
+        setTimeout(() => navigate("/login"), 1500);
+      }
     } catch (err: any) {
       setError(err.message);
       setCode(["", "", "", "", "", ""]);
@@ -131,7 +139,7 @@ export default function VerifyPhone() {
 
           {success ? (
             <div className="rounded-xl bg-green-50 px-4 py-3 text-center text-sm text-green-700">
-              Phone verified! Redirecting to login...
+              {password ? "Phone verified! Redirecting to homepage..." : "Phone verified! Redirecting to login..."}
             </div>
           ) : (
             <>
