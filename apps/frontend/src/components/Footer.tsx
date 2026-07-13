@@ -9,7 +9,7 @@ export default function Footer() {
             <Link to="/" className="font-heading text-lg font-bold text-primary-700">
               Outdoors
             </Link>
-            <p className="mt-1 text-sm text-muted">Discover the beauty of Kurdistan</p>
+            <p className="mt-1 text-sm text-muted">Discover the beauty of Iraq & Kurdistan</p>
           </div>
           <div className="flex gap-6">
             <Link to="/" className="text-sm text-muted transition-colors hover:text-primary-600">Tours</Link>

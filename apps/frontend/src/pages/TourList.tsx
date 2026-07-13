@@ -69,7 +69,7 @@ export default function TourList() {
         <div className="relative mx-auto max-w-6xl px-4 lg:px-6">
           <div className="max-w-2xl">
             <h1 className="font-heading text-4xl font-bold leading-tight text-white lg:text-5xl">
-              Explore the beauty of Kurdistan
+              Explore the beauty of Iraq & Kurdistan
             </h1>
             <p className="mt-4 text-lg text-primary-200">
               Discover dream destinations, plan trips with like-minded adventurers. Outdoor experiences that create real connections.
@@ -120,7 +120,7 @@ export default function TourList() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
               </svg>
-              Kurdistan
+Iraq & Kurdistan
             </span>
             <span className="flex items-center gap-2">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
