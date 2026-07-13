@@ -196,7 +196,6 @@ export default function MyBookings() {
         message="Are you sure you want to cancel this booking? Your seats will be released and this action cannot be undone."
         confirmLabel="Yes, Cancel"
         cancelLabel="Keep Booking"
-        danger
         onConfirm={() => confirmId && handleCancel(confirmId)}
         onCancel={() => setConfirmId(null)}
       />

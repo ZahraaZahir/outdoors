@@ -6,7 +6,7 @@ interface ConfirmModalProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  danger?: boolean;
+
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -17,7 +17,6 @@ export default function ConfirmModal({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
-  danger = false,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -40,20 +39,16 @@ export default function ConfirmModal({
         <p className="mt-2 text-sm text-muted">{message}</p>
         <div className="mt-6 flex justify-end gap-3">
           <button
-            onClick={onCancel}
-            className="rounded-full border border-primary-200 bg-white px-4 py-2 text-sm font-medium text-dark transition-colors hover:bg-primary-50"
-          >
-            {cancelLabel}
-          </button>
-          <button
             onClick={onConfirm}
-            className={`rounded-full px-4 py-2 text-sm font-medium text-white transition-colors ${
-              danger
-                ? "bg-red-500 hover:bg-red-600"
-                : "bg-primary-500 hover:bg-primary-600"
-            }`}
+            className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-dark transition-colors hover:bg-gray-50"
           >
             {confirmLabel}
+          </button>
+          <button
+            onClick={onCancel}
+            className="rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+          >
+            {cancelLabel}
           </button>
         </div>
       </div>
