@@ -31,7 +31,7 @@ export class AuthService {
     });
     if (existing) {
       throw new BadRequestException(
-        'Unable to process registration. Please try again later.',
+        'Unable to process registration.',
       );
     }
 
