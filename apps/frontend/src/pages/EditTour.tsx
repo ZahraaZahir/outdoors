@@ -170,7 +170,7 @@ export default function EditTour() {
             <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImageChange}
               className="w-full text-sm text-muted file:mr-4 file:rounded-full file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-700 hover:file:bg-primary-100" />
             {uploadingImage && <p className="mt-2 text-sm text-muted">Uploading...</p>}
-            {imageUrl && <img src={imageUrl} alt="Preview" className="mt-3 h-40 rounded-2xl object-cover" />}
+            {imageUrl && <img src={imageUrl} alt="Preview" className="mt-3 h-40 rounded-2xl object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
           </div>
 
           <button type="submit" disabled={submitting || uploadingImage}

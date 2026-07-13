@@ -106,7 +106,7 @@ export default function TourDetail() {
           <div className="lg:col-span-3">
             {tour.imageUrl ? (
               <div className="aspect-[16/9] overflow-hidden rounded-2xl">
-                <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover" />
+                <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
             ) : (
               <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200/60">

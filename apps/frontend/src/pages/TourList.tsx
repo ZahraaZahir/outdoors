@@ -181,7 +181,7 @@ Iraq & Kurdistan
                 >
                   <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800">
                     {tour.imageUrl ? (
-                      <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <img src={tour.imageUrl} alt={tour.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg className="h-20 w-20 text-white/20 transition-transform duration-500 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
