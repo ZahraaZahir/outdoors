@@ -102,7 +102,7 @@ export default function Navbar() {
                 </svg>
               </button>
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
                   <div className="border-b border-primary-50 px-4 py-3">
                     <p className="text-sm font-semibold text-dark">{user.name}</p>
                     <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
@@ -140,7 +140,7 @@ export default function Navbar() {
           {user && (
             <div ref={profileRef} className="relative">
               <button
-                onClick={() => setProfileOpen(!profileOpen)}
+                onClick={() => { setProfileOpen(!profileOpen); setMobileOpen(false); }}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-dark text-sm font-semibold text-white"
                 aria-expanded={profileOpen}
                 aria-haspopup="true"
@@ -148,7 +148,7 @@ export default function Navbar() {
                 {initial}
               </button>
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
                   <div className="border-b border-primary-50 px-4 py-3">
                     <p className="text-sm font-semibold text-dark">{user.name}</p>
                     <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
