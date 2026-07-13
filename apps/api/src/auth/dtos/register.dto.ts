@@ -1,9 +1,4 @@
-import {
-  IsNotEmpty,
-  IsString,
-  MinLength,
-  Matches,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
 
 export class RegisterDto {
   @IsNotEmpty({ message: 'Name is required' })

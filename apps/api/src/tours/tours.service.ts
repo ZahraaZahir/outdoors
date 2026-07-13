@@ -110,7 +110,10 @@ export class ToursService {
     if (dto.priceIQD !== undefined) data.priceIQD = dto.priceIQD;
     if (dto.imageUrl !== undefined) data.imageUrl = dto.imageUrl;
 
-    if (dto.destination !== undefined && dto.destination !== existing.destination) {
+    if (
+      dto.destination !== undefined &&
+      dto.destination !== existing.destination
+    ) {
       if (dto.latitude !== undefined && dto.longitude !== undefined) {
         data.destination = dto.destination;
         data.latitude = dto.latitude;
