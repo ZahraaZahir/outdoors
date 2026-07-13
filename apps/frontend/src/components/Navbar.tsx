@@ -1,6 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+const AVATAR_COLORS = [
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-pink-500",
+  "bg-indigo-500",
+  "bg-teal-500",
+  "bg-orange-500",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -10,18 +29,26 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = (e: React.PointerEvent) => {
+    e.stopPropagation();
     setProfileOpen(false);
     setMobileOpen(false);
+    logout();
     navigate("/login");
   };
 
   const isActive = (path: string) => location.pathname === path;
 
+  const avatarColor = useMemo(
+    () => (user?.name ? getAvatarColor(user.name) : "bg-dark"),
+    [user?.name]
+  );
+
+  const initial = user?.name?.charAt(0).toUpperCase() ?? "?";
+
   useEffect(() => {
     if (!profileOpen) return;
-    const handleClick = (e: MouseEvent) => {
+    const handleDown = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
@@ -29,10 +56,10 @@ export default function Navbar() {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setProfileOpen(false);
     };
-    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", handleDown);
     document.addEventListener("keydown", handleEsc);
     return () => {
-      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("mousedown", handleDown);
       document.removeEventListener("keydown", handleEsc);
     };
   }, [profileOpen]);
@@ -42,7 +69,43 @@ export default function Navbar() {
     setProfileOpen(false);
   }, [location.pathname]);
 
-  const initial = user?.name?.charAt(0).toUpperCase() ?? "?";
+  const toggleProfile = () => {
+    setProfileOpen((p) => !p);
+    setMobileOpen(false);
+  };
+
+  const profileDropdown = (
+    <div
+      className="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-primary-100 bg-white py-1 shadow-lg"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="border-b border-primary-50 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor}`}>
+            {initial}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-dark">{user?.name}</p>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
+              <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+              {user?.phoneNumber}
+            </p>
+          </div>
+        </div>
+      </div>
+      <button
+        onPointerDown={handleLogout}
+        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-red-50 hover:text-red-600"
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+        </svg>
+        Logout
+      </button>
+    </div>
+  );
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-primary-100 bg-white/95 backdrop-blur-sm">
@@ -88,12 +151,12 @@ export default function Navbar() {
           {user ? (
             <div ref={profileRef} className="relative">
               <button
-                onClick={() => setProfileOpen(!profileOpen)}
+                onClick={toggleProfile}
                 className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-primary-50"
                 aria-expanded={profileOpen}
                 aria-haspopup="true"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-dark text-sm font-semibold text-white">
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor}`}>
                   {initial}
                 </span>
                 <span className="text-sm font-medium text-dark">{user.name}</span>
@@ -101,28 +164,7 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
               </button>
-              {profileOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                  <div className="border-b border-primary-50 px-4 py-3">
-                    <p className="text-sm font-semibold text-dark">{user.name}</p>
-                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
-                      <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                      </svg>
-                      {user.phoneNumber}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-primary-50"
-                  >
-                    <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                    </svg>
-                    Logout
-                  </button>
-                </div>
-              )}
+              {profileOpen && profileDropdown}
             </div>
           ) : (
             <>
@@ -140,41 +182,20 @@ export default function Navbar() {
           {user && (
             <div ref={profileRef} className="relative">
               <button
-                onClick={() => { setProfileOpen(!profileOpen); setMobileOpen(false); }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-dark text-sm font-semibold text-white"
+                onClick={toggleProfile}
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor}`}
                 aria-expanded={profileOpen}
                 aria-haspopup="true"
               >
                 {initial}
               </button>
-              {profileOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-primary-100 bg-white py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                  <div className="border-b border-primary-50 px-4 py-3">
-                    <p className="text-sm font-semibold text-dark">{user.name}</p>
-                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
-                      <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                      </svg>
-                      {user.phoneNumber}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-dark transition-colors hover:bg-primary-50"
-                  >
-                    <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                    </svg>
-                    Logout
-                  </button>
-                </div>
-              )}
+              {profileOpen && profileDropdown}
             </div>
           )}
           <button
             type="button"
             className="grid gap-y-1.5"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => { setMobileOpen(!mobileOpen); setProfileOpen(false); }}
             aria-label="Toggle menu"
           >
             <span className={`block h-0.5 w-6 bg-dark transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
