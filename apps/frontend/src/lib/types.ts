@@ -30,5 +30,5 @@ export interface Booking {
   seatsBooked: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
   createdAt: string;
-  tour?: Pick<Tour, "id" | "title" | "destination" | "date">;
+  tour?: Pick<Tour, "id" | "title" | "destination" | "date" | "priceIQD">;
 }

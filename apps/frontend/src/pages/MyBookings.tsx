@@ -115,46 +115,55 @@ export default function MyBookings() {
             </p>
           </div>
         ) : (
-          <div className="mt-10 flex flex-col gap-4">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2">
             {filtered.map((b) => {
               const style = STATUS_STYLES[b.status] ?? STATUS_STYLES.PENDING;
+              const total = (b.tour?.priceIQD ?? 0) * b.seatsBooked;
               return (
-                <div key={b.id} className="rounded-2xl border border-primary-100 bg-white p-5 transition-shadow hover:shadow-md">
+                <div key={b.id} className="flex flex-col rounded-2xl border border-primary-100 bg-white p-5 transition-shadow hover:shadow-md">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-heading text-lg font-semibold text-dark">{b.tour?.title ?? `Tour #${b.tourId}`}</p>
-                      <div className="mt-3 flex flex-col gap-2 text-sm text-muted">
-                        <span className="flex items-center gap-2">
-                          <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                          </svg>
-                          {b.tour?.destination}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                          </svg>
-                          {b.tour?.date ? new Date(b.tour.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "Date TBD"}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                          </svg>
-                          {b.passengerName}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                          </svg>
-                          {b.seatsBooked} {b.seatsBooked === 1 ? "seat" : "seats"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${style.bg} ${style.text}`}>
-                        {b.status}
+                    <p className="font-heading text-lg font-semibold text-dark leading-snug">{b.tour?.title ?? `Tour #${b.tourId}`}</p>
+                    <span className={`ml-3 shrink-0 rounded-full px-3 py-1 text-xs font-medium ${style.bg} ${style.text}`}>
+                      {b.status}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-col gap-2 text-sm text-muted">
+                    <span className="flex items-center gap-2">
+                      <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                      </svg>
+                      {b.tour?.destination}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                      </svg>
+                      {b.tour?.date ? new Date(b.tour.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "Date TBD"}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                      </svg>
+                      {b.passengerName}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <svg className="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                      </svg>
+                      {b.seatsBooked} {b.seatsBooked === 1 ? "seat" : "seats"}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-primary-50 pt-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-dark">
+                        {total.toLocaleString()} IQD
                       </span>
+                      <span className="text-xs text-muted">
+                        ({b.seatsBooked} x {(b.tour?.priceIQD ?? 0).toLocaleString()})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <p className="flex items-center gap-1 text-xs text-muted">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -165,7 +174,7 @@ export default function MyBookings() {
                         <button
                           onClick={() => handleCancel(b.id)}
                           disabled={cancellingId === b.id}
-                          className="mt-1 rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                          className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
                         >
                           {cancellingId === b.id ? "Cancelling..." : "Cancel"}
                         </button>
