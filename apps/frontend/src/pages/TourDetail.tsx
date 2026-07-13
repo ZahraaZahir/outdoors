@@ -67,7 +67,7 @@ export default function TourDetail() {
 
   return (
     <div>
-      <section className="relative h-72 overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950">
+      <section className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 sm:h-72">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-300 blur-3xl" />
         </div>
@@ -78,7 +78,7 @@ export default function TourDetail() {
               <span>/</span>
               <span className="text-white">{tour.title}</span>
             </div>
-            <h1 className="mt-3 font-heading text-4xl font-bold text-white">{tour.title}</h1>
+            <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl lg:text-4xl">{tour.title}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-primary-200">
               <span className="flex items-center gap-1.5">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -125,7 +125,7 @@ export default function TourDetail() {
               </p>
             </div>
 
-            <div className="mt-8 grid grid-cols-3 gap-4">
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
               <div className="rounded-xl border border-primary-100 p-4 text-center">
                 <svg className="mx-auto h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />

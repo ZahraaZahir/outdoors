@@ -110,7 +110,7 @@ export default function VerifyPhone() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-light px-4 pt-16">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-primary-100 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-50">
               <svg className="h-7 w-7 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -147,7 +147,7 @@ export default function VerifyPhone() {
                 <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
               )}
 
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-1.5 sm:gap-2">
                 {code.map((digit, i) => (
                   <input
                     key={i}
@@ -159,7 +159,7 @@ export default function VerifyPhone() {
                     onChange={(e) => handleChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     onPaste={i === 0 ? handlePaste : undefined}
-                    className="h-12 w-12 rounded-xl border border-gray-200 text-center text-lg font-semibold text-dark transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    className="h-11 w-11 rounded-xl border border-gray-200 text-center text-base font-semibold text-dark transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 sm:h-12 sm:w-12 sm:text-lg"
                   />
                 ))}
               </div>

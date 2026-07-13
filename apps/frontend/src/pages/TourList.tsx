@@ -134,7 +134,7 @@ Iraq & Kurdistan
 
       <section id="tours" className="py-20">
         <div className="mx-auto max-w-6xl px-4 lg:px-6">
-          <div className="flex items-end justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="font-heading text-3xl font-bold text-dark">Popular Destinations</h2>
               <p className="mt-2 text-muted">Handpicked adventures for you</p>
