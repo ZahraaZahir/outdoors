@@ -47,9 +47,13 @@ export class AuthService {
         },
       });
 
-      await this.otpService.generate(phoneNumber);
+      const otpCode = await this.otpService.generate(phoneNumber);
 
-      return user;
+      const response: Record<string, unknown> = { ...user };
+      if (process.env.NODE_ENV === 'development') {
+        response.otpCode = otpCode;
+      }
+      return response;
     } catch (error: unknown) {
       const err = error as {
         code?: string;
@@ -91,8 +95,14 @@ export class AuthService {
       throw new BadRequestException('Phone number is already verified.');
     }
 
-    await this.otpService.generate(phoneNumber);
-    return { message: 'Verification code sent.' };
+    const otpCode = await this.otpService.generate(phoneNumber);
+    const response: Record<string, unknown> = {
+      message: 'Verification code sent.',
+    };
+    if (process.env.NODE_ENV === 'development') {
+      response.otpCode = otpCode;
+    }
+    return response;
   }
 
   async login(credentials: LoginDto) {
