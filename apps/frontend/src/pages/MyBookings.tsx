@@ -62,13 +62,18 @@ export default function MyBookings() {
     (b.status === "PENDING" || b.status === "CONFIRMED") &&
     new Date(b.tour?.date ?? b.createdAt) > new Date();
 
+  const isUpcoming = (b: Booking) => {
+    const d = b.tour?.date;
+    return d ? new Date(d) > new Date() : true;
+  };
+
   const activeCount = bookings.filter(
-    (b) => b.status === "PENDING" || b.status === "CONFIRMED"
+    (b) => (b.status === "PENDING" || b.status === "CONFIRMED") && isUpcoming(b)
   ).length;
   const cancelledCount = bookings.filter((b) => b.status === "CANCELLED" || b.status === "FAILED").length;
 
   const filtered = filter === "active"
-    ? bookings.filter((b) => b.status === "PENDING" || b.status === "CONFIRMED")
+    ? bookings.filter((b) => (b.status === "PENDING" || b.status === "CONFIRMED") && isUpcoming(b))
     : filter === "cancelled"
       ? bookings.filter((b) => b.status === "CANCELLED" || b.status === "FAILED")
       : bookings;
