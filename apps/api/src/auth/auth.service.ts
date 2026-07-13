@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -26,42 +25,39 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { name, password, phoneNumber } = registerDto;
 
+    const existing = await this.prisma.user.findUnique({
+      where: { phoneNumber },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        'Unable to process registration. Please try again later.',
+      );
+    }
+
     const salt = await genSalt(10);
     const hashedPassword = await hash(password, salt);
 
-    try {
-      const user = await this.prisma.user.create({
-        data: {
-          name,
-          password: hashedPassword,
-          phoneNumber,
-          role: 'TRAVELER',
-        },
-        select: {
-          id: true,
-          name: true,
-          phoneNumber: true,
-          role: true,
-          verified: true,
-          createdAt: true,
-        },
-      });
+    const user = await this.prisma.user.create({
+      data: {
+        name,
+        password: hashedPassword,
+        phoneNumber,
+        role: 'TRAVELER',
+      },
+      select: {
+        id: true,
+        name: true,
+        phoneNumber: true,
+        role: true,
+        verified: true,
+        createdAt: true,
+      },
+    });
 
-      const otpCode = await this.otpService.generate(phoneNumber);
+    const otpCode = await this.otpService.generate(phoneNumber);
 
-      return { ...user, otpCode };
-    } catch (error: unknown) {
-      const err = error as {
-        code?: string;
-        meta?: { target?: string[] };
-        message?: string;
-      };
-      if (err.code === 'P2002' && err.meta?.target?.includes('phoneNumber')) {
-        throw new ConflictException('Phone number is already registered');
-      }
-      this.logger.error(`Registration failed: ${err.message}`);
-      throw error;
-    }
+    return { ...user, otpCode };
   }
 
   async verifyPhone(dto: VerifyPhoneDto) {
