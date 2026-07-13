@@ -66,7 +66,7 @@ export default function TourDetail() {
   const durationLabel = diffDays <= 1 ? "Tomorrow" : diffDays <= 7 ? `${diffDays} days` : "Upcoming";
 
   return (
-    <div>
+    <div className="pt-16">
       <section className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 sm:h-72">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-300 blur-3xl" />
