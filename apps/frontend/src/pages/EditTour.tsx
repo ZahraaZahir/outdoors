@@ -53,16 +53,7 @@ export default function EditTour() {
     setUploadingImage(true);
     setError("");
     try {
-      const form = new FormData();
-      form.append("file", file);
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/uploads/image", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
-      if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message || "Upload failed"); }
-      const { url } = await res.json();
+      const { url } = await api.uploadImage(file);
       setImageUrl(url);
     } catch (err: any) { setError(err.message); }
     finally { setUploadingImage(false); }

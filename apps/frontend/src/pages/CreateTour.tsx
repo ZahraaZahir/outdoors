@@ -35,19 +35,7 @@ export default function CreateTour() {
     try {
       let imageUrl: string | undefined;
       if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/uploads/image", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body.message || "Failed to upload image");
-        }
-        const data = await res.json();
+        const data = await api.uploadImage(imageFile);
         imageUrl = data.url;
       }
       await api.createTour({

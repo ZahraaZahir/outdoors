@@ -34,8 +34,9 @@ async function doRefresh(): Promise<string | null> {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('token');
+  const isFormData = options.body instanceof FormData;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : {'Content-Type': 'application/json'}),
     ...(options.headers as Record<string, string>),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -150,6 +151,12 @@ export const api = {
   getTours: () => cachedRequest<import('./types').Tour[]>('/tours'),
   getTour: (id: number) =>
     cachedRequest<import('./types').Tour>(`/tours/${id}`),
+
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return request<{url: string}>('/uploads/image', {method: 'POST', body: formData});
+  },
 
   createTour: (data: {
     title: string;
