@@ -1,12 +1,24 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { api } from "../lib/api";
-import type { User } from "../lib/types";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from 'react';
+import {api} from '../lib/api';
+import {queryClient} from '../lib/queryClient';
+import type {User} from '../lib/types';
 
 interface AuthState {
   user: User | null;
   token: string | null;
   login: (phoneNumber: string, password: string) => Promise<void>;
-  register: (data: { name: string; password: string; phoneNumber: string }) => Promise<{ otpCode: string }>;
+  register: (data: {
+    name: string;
+    password: string;
+    phoneNumber: string;
+  }) => Promise<{otpCode: string}>;
   logout: () => void;
   loading: boolean;
 }
@@ -15,37 +27,39 @@ const AuthContext = createContext<AuthState | null>(null);
 
 function parseJwt(token: string): User | null {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payload = JSON.parse(atob(token.split('.')[1]));
     return {
       id: payload.sub,
       phoneNumber: payload.phoneNumber,
       role: payload.role,
-      name: payload.name ?? "",
+      name: payload.name ?? '',
       verified: false,
-      createdAt: "",
+      createdAt: '',
     };
   } catch {
     return null;
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({children}: {children: ReactNode}) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem('token'),
+  );
   const [loading, setLoading] = useState(true);
 
   const refreshAccessToken = useCallback(async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) return false;
     try {
       const res = await api.refresh(refreshToken);
-      localStorage.setItem("token", res.accessToken);
+      localStorage.setItem('token', res.accessToken);
       setToken(res.accessToken);
       setUser(parseJwt(res.accessToken));
       return true;
     } catch {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       setToken(null);
       setUser(null);
       return false;
@@ -58,12 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let payload: { exp?: number };
+    let payload: {exp?: number};
     try {
-      payload = JSON.parse(atob(token.split(".")[1]));
+      payload = JSON.parse(atob(token.split('.')[1]));
     } catch {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       setToken(null);
       setUser(null);
       setLoading(false);
@@ -82,34 +96,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const refreshBuffer = 60_000;
     const refreshIn = Math.max(timeUntilExpiry - refreshBuffer, 5_000);
-    const timer = setTimeout(() => { refreshAccessToken(); }, refreshIn);
+    const timer = setTimeout(() => {
+      refreshAccessToken();
+    }, refreshIn);
 
     setLoading(false);
     return () => clearTimeout(timer);
   }, [token, refreshAccessToken]);
 
   const login = async (phoneNumber: string, password: string) => {
-    const res = await api.login({ phoneNumber, password });
-    localStorage.setItem("token", res.accessToken);
-    localStorage.setItem("refreshToken", res.refreshToken);
+    const res = await api.login({phoneNumber, password});
+    localStorage.setItem('token', res.accessToken);
+    localStorage.setItem('refreshToken', res.refreshToken);
     setToken(res.accessToken);
     setUser(parseJwt(res.accessToken));
   };
 
-  const register = async (data: { name: string; password: string; phoneNumber: string }) => {
+  const register = async (data: {
+    name: string;
+    password: string;
+    phoneNumber: string;
+  }) => {
     const res = await api.register(data);
-    return { otpCode: res.otpCode };
+    return {otpCode: res.otpCode};
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    queryClient.clear();
     setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+    <AuthContext.Provider
+      value={{user, token, login, register, logout, loading}}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -117,6 +140,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
