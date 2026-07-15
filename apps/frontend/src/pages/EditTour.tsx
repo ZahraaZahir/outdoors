@@ -49,7 +49,7 @@ export default function EditTour() {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5MB."); return; }
+    if (file.size > 4 * 1024 * 1024) { setError("Image must be under 4MB."); return; }
     setUploadingImage(true);
     setError("");
     try {
