@@ -30,6 +30,9 @@ import { UploadsModule } from './uploads/uploads.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const redisUrl = configService.get<string>('redis.url');
+        if (!redisUrl) {
+          throw new Error('FATAL: Redis URL configuration is missing.');
+        }
         return {
           stores: [new KeyvRedis(redisUrl)],
         };
@@ -41,9 +44,24 @@ import { UploadsModule } from './uploads/uploads.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const redisUrl = configService.get<string>('redis.url');
+
+        if (!redisUrl) {
+          throw new Error('FATAL: Redis URL configuration is missing.');
+        }
+
+        const url = new URL(redisUrl);
+
         return {
           connection: {
-            url: redisUrl,
+            host: url.hostname,
+            port: Number(url.port),
+            username: url.username || 'default',
+            password: url.password,
+            tls:
+              url.protocol === 'rediss:'
+                ? { rejectUnauthorized: false }
+                : undefined,
+            maxRetriesPerRequest: null,
           },
         };
       },
