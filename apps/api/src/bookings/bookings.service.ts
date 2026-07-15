@@ -224,6 +224,24 @@ export class BookingsService {
     });
   }
 
+  async findAll() {
+    return this.prisma.booking.findMany({
+      include: {
+        tour: {
+          select: {
+            id: true,
+            title: true,
+            destination: true,
+            date: true,
+            priceIQD: true,
+            imageUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findMine(userId: number) {
     return this.prisma.booking.findMany({
       where: { userId },

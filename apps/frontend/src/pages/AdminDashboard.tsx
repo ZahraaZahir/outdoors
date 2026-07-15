@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState<Tour | null>(null);
 
   useEffect(() => {
-    Promise.all([api.getTours(), api.getBookings()])
+    Promise.all([api.getTours(), api.getAllBookings()])
       .then(([t, b]) => { setTours(t); setBookings(b); })
       .finally(() => setLoading(false));
   }, []);

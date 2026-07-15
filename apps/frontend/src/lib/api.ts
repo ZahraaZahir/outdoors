@@ -195,6 +195,8 @@ export const api = {
 
   getBookings: () => cachedRequest<import('./types').Booking[]>('/bookings'),
 
+  getAllBookings: () => cachedRequest<import('./types').Booking[]>('/bookings/all'),
+
   createBooking: (data: {
     tourId: number;
     passengerName: string;

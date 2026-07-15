@@ -11,6 +11,9 @@ import {
 import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dtos/create-booking.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Role } from '../generated/prisma/enums.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { UserPayload } from '../auth/interfaces/authenticated-request.interface.js';
 import {
@@ -31,6 +34,13 @@ export class BookingsController {
     @CurrentUser() user: UserPayload,
   ) {
     return this.bookingsService.create(dto, user.id, user.phoneNumber);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('all')
+  async findAll() {
+    return this.bookingsService.findAll();
   }
 
   @Get()
