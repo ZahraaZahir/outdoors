@@ -164,12 +164,79 @@ export class BookingsService {
     return booking;
   }
 
+  async updateSeats(bookingId: number, userId: number, newSeats: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { tour: true },
+      });
+
+      if (!booking || booking.userId !== userId) {
+        throw new BadRequestException('Booking not found.');
+      }
+
+      if (
+        booking.status !== BookingStatus.CONFIRMED &&
+        booking.status !== BookingStatus.PENDING
+      ) {
+        throw new BadRequestException('Only active bookings can be modified.');
+      }
+
+      const seatDifference = newSeats - booking.seatsBooked;
+
+      const totalBooked = await tx.booking.aggregate({
+        where: {
+          userId,
+          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+          id: { not: bookingId },
+        },
+        _sum: { seatsBooked: true },
+      });
+
+      const currentTotal = totalBooked._sum.seatsBooked || 0;
+      if (currentTotal + newSeats > MAX_SEATS_PER_USER_TOTAL) {
+        throw new BadRequestException(
+          `Limit exceeded. Max ${MAX_SEATS_PER_USER_TOTAL} seats allowed total.`,
+        );
+      }
+
+      if (seatDifference > 0) {
+        const tourUpdate = await tx.tour.updateMany({
+          where: {
+            id: booking.tourId,
+            availableSeats: { gte: seatDifference },
+          },
+          data: { availableSeats: { decrement: seatDifference } },
+        });
+        if (tourUpdate.count === 0)
+          throw new BadRequestException('Not enough seats available.');
+      } else if (seatDifference < 0) {
+        await tx.tour.update({
+          where: { id: booking.tourId },
+          data: { availableSeats: { increment: Math.abs(seatDifference) } },
+        });
+      }
+
+      return tx.booking.update({
+        where: { id: bookingId },
+        data: { seatsBooked: newSeats },
+      });
+    });
+  }
+
   async findMine(userId: number) {
     return this.prisma.booking.findMany({
       where: { userId },
       include: {
         tour: {
-          select: { id: true, title: true, destination: true, date: true, priceIQD: true, imageUrl: true },
+          select: {
+            id: true,
+            title: true,
+            destination: true,
+            date: true,
+            priceIQD: true,
+            imageUrl: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },

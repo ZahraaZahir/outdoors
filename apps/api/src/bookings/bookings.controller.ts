@@ -38,6 +38,15 @@ export class BookingsController {
     return this.bookingsService.findMine(user.id);
   }
 
+  @Patch(':id/seats')
+  async updateSeats(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('seatsBooked', ParseIntPipe) seats: number,
+    @CurrentUser() user: UserPayload,
+  ) {
+    return this.bookingsService.updateSeats(id, user.id, seats);
+  }
+
   @Patch(':id/cancel')
   async cancel(
     @Param('id', ParseIntPipe) id: number,
