@@ -62,6 +62,8 @@ import { UploadsModule } from './uploads/uploads.module.js';
                 ? { rejectUnauthorized: false }
                 : undefined,
             maxRetriesPerRequest: null,
+            connectTimeout: 10000,
+            keepAlive: 30000,
           },
         };
       },
