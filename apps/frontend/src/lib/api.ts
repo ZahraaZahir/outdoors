@@ -1,3 +1,5 @@
+import {queryClient} from './queryClient';
+
 const BASE = import.meta.env.VITE_API_URL || '/api';
 
 interface CacheEntry<T> {
@@ -98,11 +100,13 @@ async function cachedRequest<T>(
 function invalidate(pattern?: string) {
   if (!pattern) {
     cache.clear();
+    queryClient.invalidateQueries();
     return;
   }
   for (const key of cache.keys()) {
     if (key.includes(pattern)) cache.delete(key);
   }
+  queryClient.invalidateQueries();
 }
 
 export const api = {
