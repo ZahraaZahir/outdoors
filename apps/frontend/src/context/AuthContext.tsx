@@ -33,8 +33,8 @@ function parseJwt(token: string): User | null {
       phoneNumber: payload.phoneNumber,
       role: payload.role,
       name: payload.name ?? '',
-      verified: false,
-      createdAt: '',
+      verified: payload.verified ?? false,
+      createdAt: payload.createdAt ?? '',
     };
   } catch {
     return null;
