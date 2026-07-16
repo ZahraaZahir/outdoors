@@ -153,8 +153,12 @@ export class AuthService {
       };
 
       const newAccessToken = await this.jwtService.signAsync(newPayload);
+      const newRefreshToken = await this.jwtService.signAsync(
+        { ...newPayload, type: 'refresh' },
+        { expiresIn: '7d' },
+      );
 
-      return { accessToken: newAccessToken };
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token.');
     }

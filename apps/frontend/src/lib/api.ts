@@ -26,6 +26,9 @@ async function doRefresh(): Promise<string | null> {
     if (!res.ok) return null;
     const data = await res.json();
     localStorage.setItem('token', data.accessToken);
+    if (data.refreshToken) {
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
     return data.accessToken;
   } catch {
     return null;
@@ -143,7 +146,7 @@ export const api = {
     }),
 
   refresh: (refreshToken: string) =>
-    request<{accessToken: string}>('/auth/refresh', {
+    request<{accessToken: string; refreshToken: string}>('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({refreshToken}),
     }),

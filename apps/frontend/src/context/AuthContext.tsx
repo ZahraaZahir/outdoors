@@ -54,6 +54,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     try {
       const res = await api.refresh(refreshToken);
       localStorage.setItem('token', res.accessToken);
+      localStorage.setItem('refreshToken', res.refreshToken);
       setToken(res.accessToken);
       setUser(parseJwt(res.accessToken));
       return true;
