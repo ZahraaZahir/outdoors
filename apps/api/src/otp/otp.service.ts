@@ -3,6 +3,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { SmsProvider } from '../notifications/sms-provider.interface.js';
 import { timingSafeEqual } from 'crypto';
+import { randomInt } from 'crypto';
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_LENGTH = 6;
@@ -22,7 +23,7 @@ export class OtpService {
 
   async generate(phoneNumber: string): Promise<string> {
     const code = Array.from({ length: OTP_LENGTH }, () =>
-      Math.floor(Math.random() * 10),
+      randomInt(10),
     ).join('');
 
     await this.cache.set(this.cacheKey(phoneNumber), code, OTP_TTL_MS);
