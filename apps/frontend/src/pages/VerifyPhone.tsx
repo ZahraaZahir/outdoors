@@ -129,7 +129,7 @@ export default function VerifyPhone() {
                 <span className="font-mono text-base font-bold text-amber-900">{otpCode}</span>
               </p>
               <p className="mt-1 text-xs text-amber-600">
-                In production, this would be sent via SMS.
+                This would be sent via SMS, but this is just a demo!.
               </p>
             </div>
           )}
