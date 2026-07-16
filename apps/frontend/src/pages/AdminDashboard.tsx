@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { Tour, Booking } from "../lib/types";
+import type { Tour } from "../lib/types";
 import ConfirmModal from "../components/ConfirmModal";
 
 function StatSkeleton() {
