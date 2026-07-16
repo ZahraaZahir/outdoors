@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {useParams, useNavigate, Link} from 'react-router-dom';
 import {useQuery} from '@tanstack/react-query';
 import {api} from '../lib/api';
@@ -41,6 +41,11 @@ export default function TourDetail() {
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({passengerName: '', seatsBooked: 1});
+  const redirectTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => clearTimeout(redirectTimer.current);
+  }, []);
 
   const {
     data: tour,
@@ -62,7 +67,7 @@ export default function TourDetail() {
       setSuccess(
         'Booking created! Confirmation would be sent via SMS in production.',
       );
-      setTimeout(() => navigate('/my-bookings'), 2000);
+      redirectTimer.current = setTimeout(() => navigate('/my-bookings'), 2000);
     } catch (err: any) {
       setBookingError(err.message);
     } finally {

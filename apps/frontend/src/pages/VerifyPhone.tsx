@@ -21,6 +21,11 @@ export default function VerifyPhone() {
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => clearTimeout(redirectTimer.current);
+  }, []);
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
@@ -73,9 +78,9 @@ export default function VerifyPhone() {
       setSuccess(true);
       if (password) {
         await login(phoneNumber, password);
-        setTimeout(() => navigate("/"), 1500);
+        redirectTimer.current = setTimeout(() => navigate("/"), 1500);
       } else {
-        setTimeout(() => navigate("/login"), 1500);
+        redirectTimer.current = setTimeout(() => navigate("/login"), 1500);
       }
     } catch (err: any) {
       setError(err.message);
