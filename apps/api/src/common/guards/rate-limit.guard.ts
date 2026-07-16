@@ -20,6 +20,8 @@ interface RateLimitEntry {
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   private readonly store = new Map<string, RateLimitEntry>();
+  private lastSweep = Date.now();
+  private static readonly SWEEP_INTERVAL_MS = 60_000;
 
   constructor(private readonly reflector: Reflector) {}
 
@@ -30,6 +32,8 @@ export class RateLimitGuard implements CanActivate {
     );
 
     if (!meta) return true;
+
+    this.sweepExpired();
 
     const { ttlMs, maxRequests } = meta;
     const req = context.switchToHttp().getRequest();
@@ -51,5 +55,14 @@ export class RateLimitGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private sweepExpired() {
+    const now = Date.now();
+    if (now - this.lastSweep < RateLimitGuard.SWEEP_INTERVAL_MS) return;
+    this.lastSweep = now;
+    for (const [key, entry] of this.store) {
+      if (now > entry.resetAt) this.store.delete(key);
+    }
   }
 }
