@@ -8,10 +8,12 @@ export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", password: "", phoneNumber: "" });
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
     try {
       const { otpCode } = await register(form);
       setPendingPassword(form.password);
@@ -20,6 +22,8 @@ export default function Register() {
       });
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,8 +75,8 @@ export default function Register() {
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
-            <button type="submit" className="mt-2 w-full rounded-full bg-primary-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
-              Register
+            <button type="submit" disabled={submitting} className="mt-2 w-full rounded-full bg-primary-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:opacity-50">
+              {submitting ? "Creating account..." : "Register"}
             </button>
           </form>
           <p className="mt-6 text-center text-sm text-muted">

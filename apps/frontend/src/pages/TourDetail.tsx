@@ -39,6 +39,7 @@ export default function TourDetail() {
 
   const [bookingError, setBookingError] = useState('');
   const [success, setSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({passengerName: '', seatsBooked: 1});
 
   const {
@@ -55,6 +56,7 @@ export default function TourDetail() {
     e.preventDefault();
     setBookingError('');
     setSuccess('');
+    setSubmitting(true);
     try {
       await api.createBooking({tourId, ...form});
       setSuccess(
@@ -63,6 +65,8 @@ export default function TourDetail() {
       setTimeout(() => navigate('/my-bookings'), 2000);
     } catch (err: any) {
       setBookingError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -323,9 +327,10 @@ export default function TourDetail() {
                     </div>
                     <button
                       type="submit"
-                      className="mt-2 w-full rounded-full bg-primary-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+                      disabled={submitting}
+                      className="mt-2 w-full rounded-full bg-primary-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
                     >
-                      Book Now
+                      {submitting ? 'Booking...' : 'Book Now'}
                     </button>
                   </div>
                 </form>
