@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { SmsProvider } from '../notifications/sms-provider.interface.js';
+import { timingSafeEqual } from 'crypto';
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_LENGTH = 6;
@@ -40,10 +41,15 @@ export class OtpService {
 
   async verify(phoneNumber: string, code: string): Promise<boolean> {
     const stored = await this.cache.get<string>(this.cacheKey(phoneNumber));
-    if (!stored || stored !== code) {
+    if (!stored || stored.length !== code.length) {
       return false;
     }
-    await this.cache.del(this.cacheKey(phoneNumber));
-    return true;
+    const a = Buffer.from(stored);
+    const b = Buffer.from(code);
+    const match = timingSafeEqual(a, b);
+    if (match) {
+      await this.cache.del(this.cacheKey(phoneNumber));
+    }
+    return match;
   }
 }
