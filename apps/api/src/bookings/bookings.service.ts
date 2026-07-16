@@ -165,6 +165,10 @@ export class BookingsService {
   }
 
   async updateSeats(bookingId: number, userId: number, newSeats: number) {
+    if (newSeats < 1) {
+      throw new BadRequestException('Must book at least 1 seat.');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
