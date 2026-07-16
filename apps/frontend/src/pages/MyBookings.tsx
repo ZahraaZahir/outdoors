@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import type { Booking } from "../lib/types";
 import ConfirmModal from "../components/ConfirmModal";
@@ -32,30 +33,31 @@ function BookingSkeleton() {
 type Filter = "all" | "active" | "cancelled";
 
 export default function MyBookings() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<Filter>("active");
-  const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
-  useEffect(() => {
-    api.getBookings().then(setBookings).finally(() => setLoading(false));
-  }, []);
+  const { data: bookings = [], isLoading } = useQuery({
+    queryKey: ["bookings"],
+    queryFn: api.getBookings,
+  });
 
-  const handleCancel = async (id: number) => {
+  const cancelMutation = useMutation({
+    mutationFn: (id: number) => api.cancelBooking(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["tours"] });
+    },
+  });
+
+  const handleCancel = (id: number) => {
     setConfirmId(null);
-    setCancellingId(id);
-    try {
-      await api.cancelBooking(id);
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "CANCELLED" as const } : b))
-      );
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Cancel failed";
-      alert(message);
-    } finally {
-      setCancellingId(null);
-    }
+    cancelMutation.mutate(id, {
+      onError: (err: unknown) => {
+        const message = err instanceof Error ? err.message : "Cancel failed";
+        alert(message);
+      },
+    });
   };
 
   const canCancel = (b: Booking) =>
@@ -84,7 +86,7 @@ export default function MyBookings() {
         <h1 className="font-heading text-3xl font-bold text-dark">My Bookings</h1>
         <p className="mt-2 text-muted">Track your tour reservations</p>
 
-        {!loading && bookings.length > 0 && (
+        {!isLoading && bookings.length > 0 && (
           <div className="mt-6 flex gap-2">
             {(["active", "all", "cancelled"] as Filter[]).map((f) => (
               <button
@@ -104,7 +106,7 @@ export default function MyBookings() {
           </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
           <div className="mt-10 flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <BookingSkeleton key={i} />
@@ -114,7 +116,7 @@ export default function MyBookings() {
           <div className="mt-16 flex flex-col items-center justify-center text-center">
             <div className="mb-4 rounded-full bg-primary-50 p-4">
               <svg className="h-10 w-10 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125-1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
               </svg>
             </div>
             <p className="text-lg font-medium text-dark">
@@ -140,14 +142,13 @@ export default function MyBookings() {
               return (
                 <div key={b.id} className={`overflow-hidden rounded-2xl border bg-white transition-shadow hover:shadow-md ${isPast ? "border-gray-200 opacity-75" : "border-primary-100"}`}>
                   <div className="flex flex-col sm:flex-row">
-                    {/* Tour image */}
                     <Link to={`/tours/${b.tourId}`} className="relative h-40 shrink-0 overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 sm:h-auto sm:w-48">
                       {b.tour?.imageUrl ? (
                         <img src={b.tour.imageUrl} alt={b.tour.title} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       ) : (
                         <div className="flex h-full items-center justify-center">
                           <svg className="h-12 w-12 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                           </svg>
                         </div>
                       )}
@@ -158,7 +159,6 @@ export default function MyBookings() {
                       )}
                     </Link>
 
-                    {/* Content */}
                     <div className="flex flex-1 flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -217,10 +217,10 @@ export default function MyBookings() {
                           {canCancel(b) && (
                             <button
                               onClick={() => setConfirmId(b.id)}
-                              disabled={cancellingId === b.id}
+                              disabled={cancelMutation.isPending}
                               className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
                             >
-                              {cancellingId === b.id ? "Cancelling..." : "Cancel"}
+                              {cancelMutation.isPending ? "Cancelling..." : "Cancel"}
                             </button>
                           )}
                         </div>
