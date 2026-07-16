@@ -17,6 +17,7 @@ export default function CreateTour() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 4 * 1024 * 1024) { setError("Image must be under 4MB."); return; }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
@@ -155,7 +156,7 @@ export default function CreateTour() {
                 type="number"
                 placeholder="0"
                 required
-                min={0}
+                min={1}
                 value={form.priceIQD}
                 onChange={update("priceIQD")}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
