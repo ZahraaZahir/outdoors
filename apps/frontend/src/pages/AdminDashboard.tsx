@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import type { Tour, Booking } from "../lib/types";
 import ConfirmModal from "../components/ConfirmModal";
@@ -14,32 +15,39 @@ function StatSkeleton() {
 }
 
 export default function AdminDashboard() {
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tour | null>(null);
 
-  useEffect(() => {
-    Promise.all([api.getTours(), api.getAllBookings()])
-      .then(([t, b]) => { setTours(t); setBookings(b); })
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: tours = [], isLoading: toursLoading } = useQuery({
+    queryKey: ["tours"],
+    queryFn: api.getTours,
+  });
 
-  const handleDelete = async () => {
+  const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
+    queryKey: ["bookings", "all"],
+    queryFn: api.getAllBookings,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.deleteTour(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tours"] });
+      setDeleteTarget(null);
+      setDeletingId(null);
+    },
+    onError: () => {
+      setDeletingId(null);
+    },
+  });
+
+  const handleDelete = () => {
     if (!deleteTarget) return;
     setDeletingId(deleteTarget.id);
-    try {
-      await api.deleteTour(deleteTarget.id);
-      setTours((prev) => prev.filter((t) => t.id !== deleteTarget.id));
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Delete failed";
-      alert(message);
-    } finally {
-      setDeletingId(null);
-      setDeleteTarget(null);
-    }
+    deleteMutation.mutate(deleteTarget.id);
   };
+
+  const loading = toursLoading || bookingsLoading;
 
   if (loading) {
     return (
@@ -71,7 +79,7 @@ export default function AdminDashboard() {
       value: tours.length,
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
         </svg>
       ),
     },
