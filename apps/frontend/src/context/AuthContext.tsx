@@ -25,9 +25,17 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function decodeBase64Url(str: string): string {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 function parseJwt(token: string): User | null {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(decodeBase64Url(token.split('.')[1]));
     return {
       id: payload.sub,
       phoneNumber: payload.phoneNumber,
@@ -75,7 +83,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
 
     let payload: {exp?: number};
     try {
-      payload = JSON.parse(atob(token.split('.')[1]));
+      payload = JSON.parse(decodeBase64Url(token.split('.')[1]));
     } catch {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
