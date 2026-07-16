@@ -16,14 +16,11 @@ export class AppController {
 
   @Get('health')
   async healthCheck() {
-    const userCount = await this.prisma.user.count();
+    await this.prisma.$queryRaw`SELECT 1`;
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
       db: 'connected',
-      stats: {
-        users: userCount,
-      },
     };
   }
 }
