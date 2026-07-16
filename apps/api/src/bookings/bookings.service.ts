@@ -169,7 +169,7 @@ export class BookingsService {
       throw new BadRequestException('Must book at least 1 seat.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
         include: { tour: true },
@@ -226,6 +226,10 @@ export class BookingsService {
         data: { seatsBooked: newSeats },
       });
     });
+
+    await this.cacheManager.del(TOURS_CACHE_KEY);
+
+    return result;
   }
 
   async findAll() {
