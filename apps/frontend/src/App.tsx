@@ -14,6 +14,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const CreateTour = lazy(() => import("./pages/CreateTour"));
 const EditTour = lazy(() => import("./pages/EditTour"));
 const VerifyPhone = lazy(() => import("./pages/VerifyPhone"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageSkeleton() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
                 <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/admin/tours/new" element={<AdminRoute><CreateTour /></AdminRoute>} />
                 <Route path="/admin/tours/:id/edit" element={<AdminRoute><EditTour /></AdminRoute>} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </div>
