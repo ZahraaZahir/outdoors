@@ -38,9 +38,9 @@ export class SmsProcessor extends WorkerHost {
       );
     }
 
-    if (booking.status === BookingStatus.CONFIRMED) {
+    if (booking.status !== BookingStatus.PENDING) {
       this.logger.warn(
-        `Booking ID ${bookingId} is already CONFIRMED, skipping.`,
+        `Booking ID ${bookingId} has status ${booking.status}, skipping.`,
       );
       return;
     }
