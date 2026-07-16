@@ -293,7 +293,12 @@ export class BookingsService {
 
       await tx.tour.update({
         where: { id: booking.tourId },
-        data: { availableSeats: { increment: booking.seatsBooked } },
+        data: {
+          availableSeats: Math.min(
+            booking.tour.availableSeats + booking.seatsBooked,
+            booking.tour.maxSeats,
+          ),
+        },
       });
     });
 
