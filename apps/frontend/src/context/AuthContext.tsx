@@ -134,6 +134,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     queryClient.clear();
+    api.clearCache();
     setToken(null);
     setUser(null);
   };

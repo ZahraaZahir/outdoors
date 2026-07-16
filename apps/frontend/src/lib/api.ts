@@ -254,4 +254,9 @@ export const api = {
       })
       .catch(() => {});
   },
+
+  clearCache: () => {
+    cache.clear();
+    inflight.clear();
+  },
 };
