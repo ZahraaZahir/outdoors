@@ -41,7 +41,7 @@ export default function TourDetail() {
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({passengerName: '', seatsBooked: 1});
-  const redirectTimer = useRef<ReturnType<typeof setTimeout>>();
+  const redirectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     return () => clearTimeout(redirectTimer.current);

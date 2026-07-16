@@ -21,7 +21,7 @@ export default function VerifyPhone() {
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const redirectTimer = useRef<ReturnType<typeof setTimeout>>();
+  const redirectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     return () => clearTimeout(redirectTimer.current);
