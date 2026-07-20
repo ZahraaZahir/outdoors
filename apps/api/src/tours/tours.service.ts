@@ -107,7 +107,20 @@ export class ToursService {
       }
       data.date = tourDate;
     }
-    if (dto.priceIQD !== undefined) data.priceIQD = dto.priceIQD;
+    if (dto.priceIQD !== undefined && dto.priceIQD !== existing.priceIQD) {
+      const activeBookings = await this.prisma.booking.count({
+        where: {
+          tourId: id,
+          status: { in: ['PENDING', 'CONFIRMED'] },
+        },
+      });
+      if (activeBookings > 0) {
+        throw new BadRequestException(
+          'Cannot change price while the tour has active bookings.',
+        );
+      }
+      data.priceIQD = dto.priceIQD;
+    }
     if (dto.imageUrl !== undefined) data.imageUrl = dto.imageUrl;
 
     if (
