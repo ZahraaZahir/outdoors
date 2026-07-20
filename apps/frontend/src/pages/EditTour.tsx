@@ -22,9 +22,13 @@ export default function EditTour() {
   const [maxSeats, setMaxSeats] = useState(30);
   const [imageUrl, setImageUrl] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [hasActiveBookings, setHasActiveBookings] = useState(false);
 
   useEffect(() => {
-    api.getTour(tourId).then((tour) => {
+    Promise.all([
+      api.getTour(tourId),
+      api.getAllBookings(),
+    ]).then(([tour, bookings]) => {
       setTitle(tour.title);
       setDescription(tour.description || "");
       setDestination(tour.destination);
@@ -35,6 +39,10 @@ export default function EditTour() {
       setPriceIQD(tour.priceIQD);
       setMaxSeats(tour.maxSeats);
       setImageUrl(tour.imageUrl || "");
+      const activeOnTour = bookings.some(
+        (b) => b.tourId === tourId && (b.status === "PENDING" || b.status === "CONFIRMED"),
+      );
+      setHasActiveBookings(activeOnTour);
     }).catch(() => setError("Tour not found."))
       .finally(() => setLoading(false));
   }, [tourId]);
@@ -147,7 +155,11 @@ export default function EditTour() {
             <div>
               <label className="mb-2 block text-sm font-medium text-dark">Price (IQD)</label>
               <input type="number" required min={1} max={10000000} value={priceIQD} onChange={(e) => setPriceIQD(Number(e.target.value))}
-                className="w-full rounded-2xl border border-primary-200 bg-primary-50/30 px-4 py-3 text-dark placeholder:text-muted/50 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none" />
+                disabled={hasActiveBookings}
+                className="w-full rounded-2xl border border-primary-200 bg-primary-50/30 px-4 py-3 text-dark placeholder:text-muted/50 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" />
+              {hasActiveBookings && (
+                <p className="mt-1.5 text-xs text-muted">Price is locked while the tour has active bookings.</p>
+              )}
             </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-dark">Max seats</label>
