@@ -22,9 +22,9 @@ export class OtpService {
   }
 
   async generate(phoneNumber: string): Promise<string> {
-    const code = Array.from({ length: OTP_LENGTH }, () =>
-      randomInt(10),
-    ).join('');
+    const code = Array.from({ length: OTP_LENGTH }, () => randomInt(10)).join(
+      '',
+    );
 
     await this.cache.set(this.cacheKey(phoneNumber), code, OTP_TTL_MS);
 

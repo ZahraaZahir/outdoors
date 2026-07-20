@@ -30,9 +30,7 @@ export class AuthService {
       select: { id: true },
     });
     if (existing) {
-      throw new BadRequestException(
-        'Unable to process registration.',
-      );
+      throw new BadRequestException('Unable to process registration.');
     }
 
     const salt = await genSalt(10);

@@ -79,19 +79,27 @@ describe('BookingsService', () => {
         createdAt: new Date(),
       };
 
-      mockTransaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => {
-        return fn({
-          booking: {
-            aggregate: jest.fn().mockResolvedValue({ _sum: { seatsBooked: 0 } }),
-            findFirst: jest.fn().mockResolvedValue(null),
-            create: jest.fn().mockResolvedValue(bookingResult),
-          },
-          tour: {
-            findUnique: jest.fn().mockResolvedValue({ id: 1, date: futureDate, availableSeats: 10 }),
-            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-          },
-        });
-      });
+      mockTransaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => {
+          return fn({
+            booking: {
+              aggregate: jest
+                .fn()
+                .mockResolvedValue({ _sum: { seatsBooked: 0 } }),
+              findFirst: jest.fn().mockResolvedValue(null),
+              create: jest.fn().mockResolvedValue(bookingResult),
+            },
+            tour: {
+              findUnique: jest.fn().mockResolvedValue({
+                id: 1,
+                date: futureDate,
+                availableSeats: 10,
+              }),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            },
+          });
+        },
+      );
 
       const result = await service.create(
         { tourId: 1, passengerName: 'Test', seatsBooked: 2 },
@@ -107,31 +115,44 @@ describe('BookingsService', () => {
       mockPrisma.user.findUnique.mockResolvedValue({ verified: false });
 
       await expect(
-        service.create({ tourId: 1, passengerName: 'Test', seatsBooked: 1 }, 1, '07701234567'),
+        service.create(
+          { tourId: 1, passengerName: 'Test', seatsBooked: 1 },
+          1,
+          '07701234567',
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should reject booking when user has existing booking on same tour', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({ verified: true });
 
-      mockTransaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => {
-        return fn({
-          booking: {
-            aggregate: jest.fn().mockResolvedValue({ _sum: { seatsBooked: 1 } }),
-            findFirst: jest.fn()
-              .mockResolvedValueOnce({ id: 99 }) // alreadyBookedOnTour
-              .mockResolvedValueOnce(null),
-            create: jest.fn(),
-          },
-          tour: {
-            findUnique: jest.fn(),
-            updateMany: jest.fn(),
-          },
-        });
-      });
+      mockTransaction.mockImplementation(
+        async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => {
+          return fn({
+            booking: {
+              aggregate: jest
+                .fn()
+                .mockResolvedValue({ _sum: { seatsBooked: 1 } }),
+              findFirst: jest
+                .fn()
+                .mockResolvedValueOnce({ id: 99 }) // alreadyBookedOnTour
+                .mockResolvedValueOnce(null),
+              create: jest.fn(),
+            },
+            tour: {
+              findUnique: jest.fn(),
+              updateMany: jest.fn(),
+            },
+          });
+        },
+      );
 
       await expect(
-        service.create({ tourId: 1, passengerName: 'Test', seatsBooked: 1 }, 1, '07701234567'),
+        service.create(
+          { tourId: 1, passengerName: 'Test', seatsBooked: 1 },
+          1,
+          '07701234567',
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -163,7 +184,7 @@ describe('BookingsService', () => {
       await expect(service.cancel(999, 1)).rejects.toThrow(BadRequestException);
     });
 
-    it('should reject cancelling another user\'s booking', async () => {
+    it("should reject cancelling another user's booking", async () => {
       mockPrisma.booking.findUnique.mockResolvedValue({
         id: 1,
         userId: 2,
